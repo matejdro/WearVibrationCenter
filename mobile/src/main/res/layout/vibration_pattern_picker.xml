@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin">
+
+    <ImageButton
+        android:id="@+id/help_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:contentDescription="@string/test_on_watch"
+        android:src="@drawable/ic_help"/>
+
+
+    <EditText
+        android:id="@+id/pattern_box"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@id/help_button"
+        android:digits="0123456789, "
+        android:inputType="number"
+        tools:ignore="LabelFor"
+        tools:text="100, 200, 300"/>
+
+    <ImageButton
+        android:id="@+id/watch_test_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@id/pattern_box"
+        android:layout_marginTop="3dp"
+        android:contentDescription="@string/test_on_watch"
+        android:src="@drawable/ic_watch_vibration"/>
+
+    <ImageButton
+        android:id="@+id/phone_test_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/pattern_box"
+        android:layout_marginTop="3dp"
+        android:layout_toStartOf="@id/watch_test_button"
+        android:contentDescription="@string/test_on_phone"
+        android:src="@drawable/ic_phone_vibration"/>
+
+    <Button
+        android:id="@+id/tap_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/pattern_box"
+        android:layout_toStartOf="@id/phone_test_button"
+        android:text="@string/tap_vibration_pattern"/>
+
+
+    <TextView
+        android:id="@+id/tap_box"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_below="@id/tap_button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/tap_drawable"
+        android:clickable="true"
+        android:gravity="center"
+        android:text="@string/tap_here"
+        android:visibility="gone"
+        tools:visibility="visible"/>
+
+</RelativeLayout>

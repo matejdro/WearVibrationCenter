@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="32dp"
+            android:layout_marginRight="32dp">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_marginTop="16dp"
+                  android:gravity="center_horizontal"
+                  android:orientation="vertical">
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ic_watch_vibration"
+            android:text="@string/tasker_start_alarm"
+            android:onClick="startAlarm"
+            android:layout_marginBottom="24dp"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:drawableStart="@drawable/ic_settings"
+            android:onClick="changeGlobalSettings"
+            android:text="@string/tasker_global_settings"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ic_default_settings"
+            android:onClick="changeDefaultAppSettings"
+            android:text="@string/tasker_default_app_settings"/>
+
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ic_user_apps"
+            android:onClick="changeUserAppSettings"
+            android:text="@string/tasker_user_app_settings"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ic_system_apps"
+            android:onClick="changeSystemAppSettings"
+            android:text="@string/tasker_system_app_settings"/>
+
+    </LinearLayout>
+
+</ScrollView>

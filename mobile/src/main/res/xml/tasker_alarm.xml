@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.matejdro.wearvibrationcenter.preferences.VibrationPickerPreference
+        android:key="vibration_pattern"
+        android:summary="@string/setting_vibration_pattern_description"
+        android:title="@string/setting_vibration_pattern"
+        android:defaultValue="0, 500, 250, 500, 250, 500, 1000" />
+
+    <com.matejdro.wearutils.preferences.AutoSummaryEditTextPreference
+        android:defaultValue=""
+        android:key="alarm_text"
+        android:summary="@string/setting_vibration_pattern_description"
+        android:title="@string/displayed_text" />
+
+    <com.matejdro.wearutils.preferences.ImagePickerPreference
+        android:key="background_image"
+        android:summary="%1$s"
+        android:defaultValue=""
+        android:title="@string/background_image" />
+
+    <com.matejdro.wearutils.preferences.ImagePickerPreference
+        android:key="icon_image"
+        android:summary="%1$s"
+        android:defaultValue=""
+        android:title="@string/icon" />
+
+    <com.matejdro.wearutils.preferences.NumericEditTextPreference
+        android:defaultValue="600"
+        android:key="snooze_duration"
+        android:summary="@string/setting_snooze_duration_description"
+        android:title="@string/setting_snooze_duration" />
+
+    <com.matejdro.wearutils.preferences.SwitchPreferenceEx
+        android:key="respect_theater_mode"
+        android:summaryOff="@string/setting_alarm_respect_theater_mode_off_description"
+        android:summaryOn="@string/setting_alarm_respect_theater_mode_on_description"
+        android:title="@string/setting_alarm_respect_theater_mode" />
+
+    <com.matejdro.wearutils.preferences.SwitchPreferenceEx
+        android:key="respect_charging"
+        android:summaryOff="@string/setting_alarm_respect_charging_off_description"
+        android:summaryOn="@string/setting_alarm_respect_charging_on_description"
+        android:title="@string/setting_alarm_respect_charging" />
+</PreferenceScreen>

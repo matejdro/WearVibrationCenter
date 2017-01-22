@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.wearable.view.BoxInsetLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:layout_gravity="center_vertical"
+                  android:orientation="vertical"
+                  app:layout_box="left|right">
+
+        <Button
+            android:id="@+id/timed_mute"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/big_button_height"
+            android:drawableStart="@drawable/ic_timed_mute"
+            android:onClick="openTimedMute"
+            android:text="@string/timed_mute"/>
+
+        <Button
+            android:id="@+id/app_mute"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/big_button_height"
+            android:layout_marginTop="15dp"
+            android:drawableStart="@drawable/ic_apps"
+            android:onClick="openAppMute"
+            android:text="@string/app_mute"/>
+
+    </LinearLayout>
+
+</android.support.wearable.view.BoxInsetLayout>
+

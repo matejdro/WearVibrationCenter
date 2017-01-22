@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:id="@android:id/text1"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:maxWidth="150dp"
+              android:textSize="25sp"
+              android:gravity="center_vertical"
+              android:minHeight="?android:attr/listPreferredItemHeightSmall"
+              android:clickable="true"
+              tools:text="10 minutes"
+              />

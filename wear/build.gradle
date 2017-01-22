@@ -1,0 +1,45 @@
+apply plugin: 'com.android.application'
+
+//noinspection GroovyMissingReturnStatement
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
+    defaultConfig {
+        applicationId "com.matejdro.wearvibrationcenter"
+        minSdkVersion 23
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile project(':common')
+    compile project(':wearutils')
+    compile 'com.google.android.support:wearable:2.0.0-alpha3'
+    compile 'com.google.android.gms:play-services-wearable:10.0.1'
+    provided 'com.google.android.wearable:wearable:2.0.0-alpha3'
+}
+
+allprojects {
+    afterEvaluate { project ->
+        def keystoreProperties = rootProject.file('keystore.properties')
+        def debugConfig = 'debug'
+
+        if (keystoreProperties.exists() && android.signingConfigs.hasProperty(debugConfig)) {
+            def props = new Properties()
+            props.load(new FileInputStream(keystoreProperties))
+            android.signingConfigs[debugConfig].storeFile = file(props['storeFile'])
+            android.signingConfigs[debugConfig].storePassword = props['storePassword']
+            android.signingConfigs[debugConfig].keyAlias = props['keyAlias']
+            android.signingConfigs[debugConfig].keyPassword = props['keyPassword']
+        }
+    }
+}

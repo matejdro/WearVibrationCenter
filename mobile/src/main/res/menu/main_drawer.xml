@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group
+        android:id="@+id/home_group"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/home"
+            android:checked="false"
+            android:icon="@drawable/ic_home"
+            android:title="@string/tips_and_tricks" />
+    </group>
+
+
+    <group
+        android:id="@+id/per_app_group"
+        android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/default_per_app"
+            android:checked="false"
+            android:icon="@drawable/ic_default_settings"
+            android:title="@string/default_app_settings" />
+
+
+        <item
+            android:id="@+id/user_apps"
+            android:checked="false"
+            android:icon="@drawable/ic_user_apps"
+            android:title="@string/user_apps" />
+        <item
+            android:id="@+id/system_apps"
+            android:checked="false"
+            android:icon="@drawable/ic_system_apps"
+            android:title="@string/system_apps" />
+    </group>
+
+    <group
+        android:id="@+id/global_group"
+        android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/global_settings"
+            android:checked="false"
+            android:icon="@drawable/ic_settings"
+            android:title="@string/global_settings" />
+    </group>
+
+</menu>

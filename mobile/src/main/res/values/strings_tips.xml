@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tip_duplicate_vibrations">Prevent double vibrations</string>
+    <string name="tip_duplicate_vibrations_description">This app only adds additional vibrations, it does not replace existing ones.\n\nTo mute native Android Wear vibrations, put your phone (and subsequently the watch) into priority only do not disturb mode and allow calls to go through priority filtering in phone\'s settings.</string>
+    <string name="tip_per_app">Per-app settings</string>
+</resources>

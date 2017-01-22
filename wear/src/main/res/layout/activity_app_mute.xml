@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.wearable.view.WearableRecyclerView android:id="@+id/recycler"
+                                                        xmlns:android="http://schemas.android.com/apk/res/android"
+                                                        android:layout_width="match_parent"
+                                                        android:layout_height="match_parent"
+                                                        android:scrollbars="vertical"
+                                                        tools:visibility="gone"/>
+
+    <ProgressBar
+        android:id="@+id/progress"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:indeterminateOnly="true"
+        android:visibility="gone"
+        />
+
+    <TextView
+        android:id="@+id/empty_notice"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:textSize="25sp"
+        android:text="@string/no_notifications"
+        android:visibility="gone"
+        tools:visibility="visible"
+        />
+
+</merge>

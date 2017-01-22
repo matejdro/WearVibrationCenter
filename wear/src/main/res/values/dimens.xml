@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="alarm_circle_start_inset">50dp</dimen>
+    <dimen name="big_button_height">60dp</dimen>
+</resources>

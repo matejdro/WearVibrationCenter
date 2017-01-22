@@ -1,0 +1,246 @@
+package com.matejdro.wearvibrationcenter;
+
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.SystemClock;
+import android.os.Vibrator;
+import android.preference.PreferenceManager;
+import android.support.wearable.activity.ConfirmationActivity;
+import android.support.wearable.activity.WearableActivity;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.matejdro.wearvibrationcenter.common.AlarmCommand;
+import com.matejdro.wearutils.miscutils.BitmapUtils;
+import com.matejdro.wearutils.preferences.definition.Preferences;
+import com.matejdro.wearvibrationcenter.preferences.GlobalSettings;
+
+import timber.log.Timber;
+
+public class AlarmActivity extends WearableActivity implements View.OnTouchListener {
+    public static final String EXTRA_ALARM_COMMAND = "ALarmCommand";
+
+    private int displayWidth;
+
+    private FrameLayout rootLayout;
+    private FrameLayout movableLayout;
+    private FrameLayout centerMovableLayout;
+    private ImageView leftMovableCircle;
+    private ImageView rightMovableCircle;
+
+    private ImageView backgroundImage;
+    private ImageView iconImage;
+    private TextView titleBox;
+
+    private int leftCircleStartPosition;
+    private int rightCircleStartPosition;
+
+    private int moveStartX = 0;
+    private int lastMoveX = 0;
+
+    private AlarmCommand alarmCommand;
+
+    private Vibrator vibrator;
+    private Handler mainThreadHandler;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setAmbientEnabled();
+
+        alarmCommand = getIntent().getParcelableExtra(EXTRA_ALARM_COMMAND);
+        if (alarmCommand == null) {
+            Timber.e("No alarm intent!");
+            finish();
+            return;
+        }
+
+        setContentView(R.layout.activity_alarm);
+
+        rootLayout = (FrameLayout) findViewById(R.id.root_layout);
+        movableLayout = (FrameLayout) findViewById(R.id.movable_layout);
+        centerMovableLayout = (FrameLayout) findViewById(R.id.center_movable_layout);
+        leftMovableCircle = (ImageView) findViewById(R.id.left_movable_circle);
+        rightMovableCircle = (ImageView) findViewById(R.id.right_movable_circle);
+
+        backgroundImage = (ImageView) findViewById(R.id.background);
+        iconImage = (ImageView) findViewById(R.id.icon);
+        titleBox = (TextView) findViewById(R.id.title);
+
+        vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        mainThreadHandler = new Handler();
+
+        rootLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                initAnimationParameters();
+            }
+        });
+        loadAlarmData();
+        setupSelfDismiss();
+    }
+
+    private void initAnimationParameters() {
+        displayWidth = rootLayout.getMeasuredWidth();
+        int animationWidth = displayWidth * 5 / 3;
+
+        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) movableLayout.getLayoutParams();
+        layoutParams.width = animationWidth * 2 + displayWidth;
+        layoutParams.leftMargin = -animationWidth;
+        layoutParams.rightMargin = -animationWidth;
+        movableLayout.setLayoutParams(layoutParams);
+
+        layoutParams = (FrameLayout.LayoutParams) centerMovableLayout.getLayoutParams();
+        layoutParams.leftMargin = animationWidth;
+        layoutParams.rightMargin = animationWidth;
+        centerMovableLayout.setLayoutParams(layoutParams);
+
+        layoutParams = (FrameLayout.LayoutParams) leftMovableCircle.getLayoutParams();
+        layoutParams.leftMargin = displayWidth;
+        layoutParams.rightMargin = animationWidth;
+        leftMovableCircle.setLayoutParams(layoutParams);
+
+        layoutParams = (FrameLayout.LayoutParams) rightMovableCircle.getLayoutParams();
+        layoutParams.leftMargin = animationWidth;
+        layoutParams.rightMargin = displayWidth;
+        rightMovableCircle.setLayoutParams(layoutParams);
+
+        int circleInset = getResources().getDimensionPixelSize(R.dimen.alarm_circle_start_inset);
+        leftCircleStartPosition = -displayWidth + circleInset;
+        rightCircleStartPosition = displayWidth - circleInset;
+
+        setShiftPosition(0);
+        rootLayout.setOnTouchListener(this);
+    }
+
+    private void setShiftPosition(int position) {
+        centerMovableLayout.setTranslationX(position);
+        leftMovableCircle.setTranslationX(leftCircleStartPosition + position);
+        rightMovableCircle.setTranslationX(rightCircleStartPosition + position);
+    }
+
+    private void loadAlarmData() {
+        titleBox.setText(alarmCommand.getText());
+        iconImage.setImageBitmap(BitmapUtils.deserialize(alarmCommand.getIcon()));
+        backgroundImage.setImageBitmap(BitmapUtils.deserialize(alarmCommand.getBackgroundBitmap()));
+    }
+
+    private void setupSelfDismiss() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        int alarmTimeoutSeconds = Preferences.getInt(preferences, GlobalSettings.ALARM_TIMEOUT);
+        if (alarmTimeoutSeconds > 0) {
+            mainThreadHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    dismissAlarm();
+                }
+            }, alarmTimeoutSeconds * 1000);
+        }
+    }
+
+    private void restartVibrator() {
+        vibrator.vibrate(alarmCommand.getVibrationPattern(), 0);
+    }
+
+    @Override
+    protected void onResume() {
+        restartVibrator();
+
+        super.onResume();
+    }
+
+    @Override
+    protected void onStop() {
+        vibrator.cancel();
+        mainThreadHandler.removeCallbacksAndMessages(null);
+
+        super.onStop();
+    }
+
+    @Override
+    public void onEnterAmbient(Bundle ambientDetails) {
+        super.onEnterAmbient(ambientDetails);
+        onAmbientStateChanged(true);
+    }
+
+    @Override
+    public void onExitAmbient() {
+        super.onExitAmbient();
+        onAmbientStateChanged(false);
+    }
+
+    private void dismissAlarm() {
+        finish();
+    }
+
+    private void snoozeAlarm() {
+        Intent intent = new Intent(this, ConfirmationActivity.class);
+        intent.putExtra(ConfirmationActivity.EXTRA_ANIMATION_TYPE,
+                ConfirmationActivity.SUCCESS_ANIMATION);
+        intent.putExtra(ConfirmationActivity.EXTRA_MESSAGE,
+                getString(R.string.alarm_snoozed));
+        startActivity(intent);
+
+        Intent alarmActivityIntent = new Intent(this, AlarmActivity.class);
+        alarmActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        alarmActivityIntent.putExtra(AlarmActivity.EXTRA_ALARM_COMMAND, alarmCommand);
+        startActivity(alarmActivityIntent);
+
+        PendingIntent alarmPendingIntent = PendingIntent.getActivity(this, 0, alarmActivityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        alarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + alarmCommand.getSnoozeDuration(), alarmPendingIntent);
+
+        finish();
+    }
+
+    private void onAmbientStateChanged(boolean inAmbientNow)
+    {
+        if (rootLayout == null) {
+            // This method seem to sometimes call before onCreate. Ignore it.
+            return;
+        }
+        movableLayout.setVisibility(inAmbientNow ? View.INVISIBLE : View.VISIBLE);
+        backgroundImage.setVisibility(inAmbientNow ? View.INVISIBLE : View.VISIBLE);
+
+        // Vibration will stop when entering ambient some time after this method has been called.
+        // Re-start vibration after a short delay.
+        mainThreadHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                restartVibrator();
+            }
+        }, 500);
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                moveStartX = (int) event.getRawX();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                int moveLength = (int) (event.getRawX() - moveStartX);
+                lastMoveX = moveLength;
+                setShiftPosition(moveLength * 4 / 3);
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+            case MotionEvent.ACTION_OUTSIDE:
+                setShiftPosition(0);
+                if (lastMoveX < -displayWidth / 2) {
+                    snoozeAlarm();
+                } else if (lastMoveX > displayWidth / 2) {
+                    dismissAlarm();
+                }
+                break;
+        }
+        return true;
+    }
+}

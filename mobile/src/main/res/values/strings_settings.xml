@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setting_enable_vibrations">Enable vibrations</string>
+    <string name="setting_enable_vibrations_description">Global switch for all vibrations from this app</string>
+    <string name="setting_alarm_timeout">Alarm timeout</string>
+    <string name="setting_alarm_timeout_description">Alarm on the watch will dismiss itself after <![CDATA[<b>%1$s</b>]]> seconds. Use this to prevent alarm going indefinitely when watch is charging and you are not nearby for example.</string>
+    <string name="setting_mute_intervals">Mute intervals</string>
+    <string name="setting_mute_intervals_description">List of mute intervals that can be selected for timed mute on the watch.</string>
+    <string name="setting_timed_mute_zen">Timed mute do not disturb</string>
+    <string name="setting_timed_mute_zen_description">When you activate timed mute, VC can also put your phone (and subsequently the watch) into do not disturb mode to also mute vibrations from native notifications. <![CDATA[<br /><br />]]>Current setting: <![CDATA[<b>%1$s</b>]]>.</string>
+    <string name="setting_processing_delay">Vibration delay</string>
+    <string name="setting_processing_delay_description">VC will vibrate <![CDATA[<b>%1$s</b>]]> milliseconds after notification appears to prevent clashing with native vibrations. <![CDATA[<br /><br />]]>Increase this value to further reduce clashing with native vibrations.<![CDATA[<br /><br />]]>Decrease this value to make vibrations more timely (only recommended if you have dealt with native vibrations in other way such as having do not disturb constantly enabled).</string>
+
+    <string name="setting_vibration_type">Vibration type</string>
+    <string name="setting_vibration_type_description">%1$s</string>
+    <string name="category_vibrations">Vibrations</string>
+    <string name="category_watch_filter">Watch filter</string>
+    <string name="setting_respect_zen_mode">Respect Android\'s do not disturb mode</string>
+    <string name="setting_respect_zen_mode_on_description">VC will <![CDATA[<b>NOT</b>]]> vibrate for notifications that would be muted under do not disturb mode. </string>
+    <string name="setting_respect_zen_mode_off_description">VC will <![CDATA[<b>IGNORE</b>]]> do not disturb mode and vibrate even if notification was supposed to be muted under do not disturb.</string>
+
+    <string name="setting_only_vibrate_original_vibrating">Only vibrate for notifications that vibrated in the first place.</string>
+    <string name="setting_only_vibrate_original_vibrating_on_description">VC will <![CDATA[<b>ONLY</b>]]> create additional vibrations for notifications that would vibrate in the first place (even without Vibration Center app installed.)<![CDATA[<br /><br />]]>For example silent passive weather notifications will <![CDATA[<b>NOT</b>]]> vibrate.</string>
+    <string name="setting_only_vibrate_original_vibrating_off_description">VC will <![CDATA[<b>ALSO</b>]]> create additional vibrations for notifications that would not vibrate in the first place (even without Vibration Center app installed.) <![CDATA[<br /><br />]]>For example silent passive weather notifications <![CDATA[<b>WILL</b>]]> vibrate.</string>
+    <string name="setting_respect_theater_mode">Do not vibrate in theater mode</string>
+    <string name="setting_respect_theater_mode_on_description">VC will <![CDATA[<b>NOT</b>]]> create additional vibrations when in theater mode.</string>
+    <string name="setting_respect_theater_mode_off_description">VC <![CDATA[<b>WILL</b>]]> create additional vibrations regardless of the theater mode.</string>
+    <string name="setting_respect_charging">Do not vibrate when charging</string>
+    <string name="setting_respect_charging_on_description">VC will <![CDATA[<b>NOT</b>]]> create additional vibrations when watch is charging.</string>
+    <string name="setting_respect_charging_off_description">VC <![CDATA[<b>WILL</b>]]> create additional vibrations regardless of the watch\'s charging state.</string>
+    <string name="setting_alarm_respect_theater_mode">Do not create alarm in theater mode</string>
+    <string name="setting_alarm_respect_theater_mode_on_description">VC will <![CDATA[<b>NOT</b>]]> create alarm when in theater mode.</string>
+    <string name="setting_alarm_respect_theater_mode_off_description">VC <![CDATA[<b>WILL</b>]]> create alarm regardless of the theater mode.</string>
+    <string name="setting_alarm_respect_charging">Do not create alarm when charging</string>
+    <string name="setting_alarm_respect_charging_on_description">VC will <![CDATA[<b>NOT</b>]]> create alarm when watch is charging.</string>
+    <string name="setting_alarm_respect_charging_off_description">VC <![CDATA[<b>WILL</b>]]> create alarm regardless of the watch\'s charging state.</string>
+
+    <string name="setting_vibration_pattern">Vibration pattern</string>
+    <string name="setting_vibration_pattern_description">%1$s</string>
+    <string name="category_spam_filter">Spam filter</string>
+    <string name="setting_min_vibration_interval">Minimum time between vibrations</string>
+    <string name="setting_min_vibration_interval_description">VC will not create any additional vibration if previous notification from this app vibrated less than <![CDATA[<b>%1$s</b>]]> milliseconds ago.</string>
+    <string name="setting_no_update_vibration">Do not vibrate for notfication updates</string>
+    <string name="setting_no_update_vibration_on_description">VC will <![CDATA[<b>NOT</b>]]> vibrate for updates to existing notifications. <![CDATA[<br /><br />]]>For example if there is already a chat notification on your watch and it just gets updated with new messages (no new separate notifications), VC will <![CDATA[<b>NOT</b>]]> vibrate for that.</string>
+    <string name="setting_no_update_vibration_off_description">VC <![CDATA[<b>WILL</b>]]> vibrate for updates to existing notifications. <![CDATA[<br /><br />]]>For example if there is already a chat notification on your watch and it just gets updated with new messages (no new separate notifications), VC will <![CDATA[<b>ALSO</b>]]> vibrate for that.</string>
+    <string name="setting_no_subsequent_notification_vibration">Do not vibrate for subsequent notifications</string>
+    <string name="setting_no_subsequent_notification_vibration_on_description">VC will <![CDATA[<b>ONLY</b>]]> vibrate for first notification from this app. <![CDATA[<br /><br />]]>For example if you already have email notification on your watch and you got another email notification, VC will <![CDATA[<b>NOT</b>]]> vibrate for these subsequent emails.</string>
+    <string name="setting_no_subsequent_notification_vibration_off_description">VC will vibrate for <![CDATA[<b>ALL</b>]]> notifications from this app, first and subsequent ones. <![CDATA[<br /><br />]]>For example if you already have email notification on your watch and you got another email notification, VC will <![CDATA[<b>ALSO</b>]]> vibrate for these subsequent emails.</string>
+    <string name="setting_excluding_regex">Excluding regex</string>
+    <string name="setting_excluding_regex_description">List of regular expressions (case sensitive). If notification will contain <![CDATA[<b>ANY</b>]]> of these, it will <![CDATA[<b>NOT</b>]]> vibrate.</string>
+    <string name="category_content_filter">Content filter</string>
+    <string name="category_general_filter">General filter</string>
+    <string name="setting_including_regex">Including regex</string>
+    <string name="setting_including_regex_description">List of regular expressions (case sensitive). Notification <![CDATA[<b>MUST</b>]]> contain <![CDATA[<b>ALL</b>]]> of these in order to vibrate.</string>
+    <string name="setting_alarm_regex">Alarm trigger regex</string>
+    <string name="setting_alarm_regex_description">List of regular expressions (case sensitive). If notification will contain <![CDATA[<b>ANY</b>]]> of these, notification will vibrate in alarm mode even if default mode is set to single vibration.</string>
+
+    <string name="category_alarm">Alarm mode</string>
+    <string name="setting_snooze_duration">Snooze duration</string>
+    <string name="setting_snooze_duration_description">Snoozed alarms will return after <![CDATA[<b>%1$s</b>]]> seconds.</string>
+    <string name="category_watchapp">On-watch mute actions</string>
+
+    <!-- com.matejdro.wearvibrationcenter.preferences.VibrationType -->
+    <string-array name="vibration_type_labels">
+        <item>None</item>
+        <item>Single vibration</item>
+        <item>Alarm</item>
+    </string-array>
+    <string-array name="vibration_type_values">
+        <item>NONE</item>
+        <item>REGULAR</item>
+        <item>ALARM</item>
+    </string-array>
+
+    <!-- com.matejdro.wearvibrationcenter.preferences.ZenModeChange -->
+    <string-array name="zen_change_labels">
+        <item>Do not change</item>
+        <item>Alarms only</item>
+        <item>Priority notifications only</item>
+        <item>Mute everything</item>
+    </string-array>
+    <string-array name="zen_change_values">
+        <item>NO_CHANGE</item>
+        <item>ALARMS</item>
+        <item>PRIORITY</item>
+        <item>NONE</item>
+    </string-array>
+
+
+</resources>
