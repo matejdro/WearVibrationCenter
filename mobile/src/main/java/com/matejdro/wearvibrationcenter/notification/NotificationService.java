@@ -193,6 +193,10 @@ public class NotificationService extends NotificationListenerService {
 
     private void updateActiveList()
     {
+        if (!active) {
+            return;
+        }
+
         previousList = getActiveNotifications();
     }
 
