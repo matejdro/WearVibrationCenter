@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toolbar;
 
 import com.matejdro.wearutils.miscutils.BitmapUtils;
 import com.matejdro.wearvibrationcenter.R;
@@ -108,7 +109,7 @@ public class AppPickerFragment extends Fragment implements TitleUtils.TitledFrag
     private class AppListAdapter extends RecyclerView.Adapter<ViewHolder> {
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            ViewGroup view = (ViewGroup) LayoutInflater.from(getContext()).inflate(R.layout.fragment_app_list_item, parent, false);
+            ViewGroup view = (ViewGroup) LayoutInflater.from(getActivity()).inflate(R.layout.fragment_app_list_item, parent, false);
             final ViewHolder holder = new ViewHolder(view);
 
             holder.icon = (ImageView) view.findViewById(R.id.appImage);
