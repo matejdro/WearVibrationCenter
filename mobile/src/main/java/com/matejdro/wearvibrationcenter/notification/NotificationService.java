@@ -48,6 +48,8 @@ public class NotificationService extends NotificationListenerService {
     public void onDestroy() {
         active = false;
 
+        handler.removeCallbacksAndMessages(null);
+
         timedMuteManager.onDestroy();
         appMuteManager.onDestroy();
         super.onDestroy();
@@ -193,10 +195,6 @@ public class NotificationService extends NotificationListenerService {
 
     private void updateActiveList()
     {
-        if (!active) {
-            return;
-        }
-
         previousList = getActiveNotifications();
     }
 
