@@ -75,6 +75,7 @@ public class AppMuteActivity extends Activity implements GoogleApiClient.Connect
         adapter = new ListAdapter();
         recycler.setOffsettingHelper(new ListOffsettingHelper());
         recycler.setItemAnimator(new DefaultItemAnimatorNoChange());
+        recycler.setCenterEdgeItems(true);
         recycler.setAdapter(adapter);
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this);

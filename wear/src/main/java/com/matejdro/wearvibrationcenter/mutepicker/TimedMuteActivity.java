@@ -63,6 +63,7 @@ public class TimedMuteActivity extends Activity {
 
         ListAdapter adapter = new ListAdapter();
         recycler.setOffsettingHelper(new ListOffsettingHelper());
+        recycler.setCenterEdgeItems(true);
         recycler.setAdapter(adapter);
     }
 
