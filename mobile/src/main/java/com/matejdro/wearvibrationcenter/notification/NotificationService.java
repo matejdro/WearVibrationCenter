@@ -123,6 +123,17 @@ public class NotificationService extends NotificationListenerService {
         scheduleActiveListUpdate();
     }
 
+    @Override
+    public StatusBarNotification[] getActiveNotifications() {
+        try {
+            return super.getActiveNotifications();
+        } catch (SecurityException ignored) {
+            // Sometimes notification service will unbind without notice
+            Timber.w("Notification service got killed!");
+            return new StatusBarNotification[0];
+        }
+    }
+
     public static boolean prefilterNotification(StatusBarNotification statusBarNotification) {
         return statusBarNotification.isClearable()
                 &&
