@@ -91,6 +91,10 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
                 .setContentTitle(service.getString(R.string.vibrations_muted_notification_title))
                 .setContentText(service.getString(R.string.vibrations_muted_notification_explanation));
 
+        NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender();
+        wearableExtender.addAction(new NotificationCompat.Action(R.drawable.ic_dismiss_mute, service.getString(R.string.cancel_mute), unmutePendingIntent));
+        builder.extend(wearableExtender);
+
         if (mutedUntil > 0) {
             builder
                     .setWhen(mutedUntil)

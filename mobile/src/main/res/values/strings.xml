@@ -46,4 +46,5 @@
     <string name="tasker_change_specific_app">Change %1$s settings</string>
     <string name="category_expert">Expert settings</string>
     <string name="licenses">Open source licenses</string>
+    <string name="cancel_mute">Cancel mute</string>
 </resources>
