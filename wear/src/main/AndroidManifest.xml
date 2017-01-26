@@ -29,7 +29,7 @@
 
         <activity
             android:name=".mutepicker.MuteModeActivity"
-            android:label="@string/mute_vibes">
+            android:label="@string/app_name_shorter">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

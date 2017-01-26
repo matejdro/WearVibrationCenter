@@ -4,7 +4,7 @@
     <string name="alarm_snoozed">Alarm snoozed</string>
     <string name="timed_mute">Timed mute</string>
     <string name="app_mute">App mute</string>
-    <string name="mute_vibes">Mute Vibes</string>
+    <string name="app_name_shorter">Vibe center</string>
     <string name="mute_interval_list_item">%1$s minutes</string>
     <string name="until_manually">Until manually disabled</string>
     <string name="timed_mute_success">Vibrations muted</string>
