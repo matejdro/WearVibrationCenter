@@ -12,7 +12,7 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="AppThemeNoAction" parent="AppThemeNoActionBarBase">
+    <style name="AppThemeNoActionBar" parent="AppThemeNoActionBarBase">
     </style>
 
     <style name="TipCard">
