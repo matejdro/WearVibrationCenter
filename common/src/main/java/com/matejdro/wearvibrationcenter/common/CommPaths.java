@@ -2,6 +2,8 @@ package com.matejdro.wearvibrationcenter.common;
 
 public interface CommPaths
 {
+    String PHONE_APP_CAPABILITY = "VibrationCenter";
+
     String COMMAND_VIBRATE = "/Command/Vibrate";
     String COMMAND_ALARM = "/Command/Alarm";
     String COMMAND_APP_MUTE = "/Command/AppMute";

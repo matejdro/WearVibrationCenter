@@ -13,5 +13,9 @@
     <string name="app_mute_confirmation_explanation">%1$s will be muted until you dismiss all of its notifications</string>
     <string name="dont_ask_again">Don\'t ask me again</string>
     <string name="app_muted">App muted</string>
+    <string name="no_phone_app_description">To use this app, you need to also install phone app.</string>
+    <string name="no_phone_app_button">Open phone Play Store</string>
+    <string name="play_store_opened">Phone play store opened</string>
+    <string name="play_store_opening_failed">Play store opening failed</string>
 
 </resources>
