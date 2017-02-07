@@ -134,14 +134,13 @@ public class NotificationProcessor {
             return false;
         }
 
-        Notification metadataNotification = processedNotification.getMetadataNotification().getNotification();
 
         SharedPreferences appPreferences = processedNotification.getAppPreferences();
 
         if (Preferences.getBoolean(appPreferences, PerAppSettings.ONLY_VIBRATE_ORIGINAL_VIBRATING)) {
-            if ((metadataNotification.defaults & Notification.DEFAULT_VIBRATE) == 0 &&
-                    getVibrationLength(metadataNotification.vibrate) == 0) {
-                Timber.d("Filter fail - passive vibration");
+            Notification metadataNotification = processedNotification.getMetadataNotification().getNotification();
+            if (isPassiveNotification(metadataNotification)) {
+                Timber.d("Filter fail - passive notification");
                 return false;
             }
         }
@@ -188,6 +187,16 @@ public class NotificationProcessor {
         }
 
         return true;
+    }
+
+    private boolean isPassiveNotification(Notification notification) {
+        // If notification specified either default vibration or default sound, mark it as non-passive
+        if ((notification.defaults & (Notification.DEFAULT_VIBRATE | Notification.DEFAULT_SOUND)) != 0) {
+            return false;
+        }
+
+        return getVibrationLength(notification.vibrate) == 0 && notification.sound == null;
+
     }
 
     private boolean filterAndProcessWearGroup(ProcessedNotification notification) {
@@ -282,44 +291,45 @@ public class NotificationProcessor {
     }
 
     @SuppressWarnings("ConstantConditions")
-    public Bitmap getNotificationBackgroundImage(StatusBarNotification notification)
-    {
+    public Bitmap getNotificationBackgroundImage(StatusBarNotification notification) {
         Bundle extras = NotificationCompat.getExtras(notification.getNotification());
-        if (extras != null)
-        {
+        if (extras != null) {
             //Extract image from BigPictureStyle notification style
             Bitmap bitmap = BitmapUtils.getBitmap(service, extras.getParcelable(NotificationCompat.EXTRA_PICTURE));
-            if (bitmap != null)
+            if (bitmap != null) {
                 return bitmap;
+            }
 
             //Extract image from Wearable extender background
-            if (extras.containsKey("android.wearable.EXTENSIONS"))
-            {
+            if (extras.containsKey("android.wearable.EXTENSIONS")) {
                 Bundle wearableExtension = extras.getBundle("android.wearable.EXTENSIONS");
                 bitmap = BitmapUtils.getBitmap(service, wearableExtension.getParcelable("background"));
-                if (bitmap != null)
+                if (bitmap != null) {
                     return bitmap;
+                }
             }
 
             //Extract image from Car extender large icon
-            if (extras.containsKey("android.car.EXTENSIONS"))
-            {
+            if (extras.containsKey("android.car.EXTENSIONS")) {
                 Bundle carExtensions = extras.getBundle("android.car.EXTENSIONS");
                 bitmap = BitmapUtils.getBitmap(service, carExtensions.getParcelable("large_icon"));
-                if (bitmap != null)
+                if (bitmap != null) {
                     return bitmap;
+                }
             }
 
             //Extract image from large icon on android notification
             bitmap = BitmapUtils.getBitmap(service, extras.getParcelable(NotificationCompat.EXTRA_LARGE_ICON_BIG));
-            if (bitmap != null)
+            if (bitmap != null) {
                 return bitmap;
+            }
 
             bitmap = BitmapUtils.getBitmap(service, extras.getParcelable(NotificationCompat.EXTRA_LARGE_ICON));
-            if (bitmap != null)
+            if (bitmap != null) {
                 return bitmap;
+            }
         }
 
-        return  null;
+        return null;
     }
 }
