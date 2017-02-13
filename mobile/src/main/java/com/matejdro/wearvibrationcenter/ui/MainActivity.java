@@ -15,11 +15,12 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
+import com.matejdro.wearvibrationcenter.common.CommPaths;
 import com.matejdro.wearvibrationcenter.notification.NotificationService;
 import com.matejdro.wearvibrationcenter.R;
 import com.matejdro.wearvibrationcenter.preferences.PerAppSettings;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, AppPickerFragment.AppPickerCallback, TitleUtils.TitledActivity, FragmentManager.OnBackStackChangedListener {
+public class MainActivity extends WearCompanionPhoneActivity implements NavigationView.OnNavigationItemSelectedListener, AppPickerFragment.AppPickerCallback, TitleUtils.TitledActivity, FragmentManager.OnBackStackChangedListener {
     private ActionBarDrawerToggle actionBarDrawerToggle;
 
     private DrawerLayout drawerLayout;
@@ -165,5 +166,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onBackStackChanged() {
         onFragmentSwitched(getFragmentManager().findFragmentById(R.id.content_frame));
+    }
+
+    @Override
+    public String getWatchAppPresenceCapability() {
+        return CommPaths.WATCH_APP_CAPABILITY;
     }
 }
