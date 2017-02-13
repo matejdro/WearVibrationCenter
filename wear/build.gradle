@@ -9,8 +9,8 @@ android {
         applicationId "com.matejdro.wearvibrationcenter"
         minSdkVersion 23
         targetSdkVersion 25
-        versionCode 8
-        versionName "1.0.4"
+        versionCode 110
+        versionName "1.0.5"
     }
     buildTypes {
         release {
@@ -25,6 +25,7 @@ android {
         }
         //noinspection GroovyMissingReturnStatement
         wear2 {
+            minSdkVersion 24
         }
     }
 }
