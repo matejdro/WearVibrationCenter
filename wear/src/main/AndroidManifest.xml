@@ -80,7 +80,7 @@
         <activity
             android:name="android.support.wearable.activity.ConfirmationActivity"/>
         <activity
-            android:name=".PhoneAppNoticeActivity"/>
+            android:name="com.matejdro.wearutils.companionnotice.PhoneAppNoticeActivity"/>
     </application>
 
 </manifest>
