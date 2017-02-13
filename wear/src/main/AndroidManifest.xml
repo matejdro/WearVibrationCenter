@@ -21,7 +21,7 @@
 
         <meta-data
             android:name="com.google.android.wearable.standalone"
-            android:value="false" />
+            android:value="false"/>
 
         <uses-library
             android:name="com.google.android.wearable"
@@ -79,6 +79,8 @@
 
         <activity
             android:name="android.support.wearable.activity.ConfirmationActivity"/>
+        <activity
+            android:name=".PhoneAppNoticeActivity"/>
     </application>
 
 </manifest>
