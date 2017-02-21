@@ -16,6 +16,32 @@ public class PerAppSharedPreferences implements SharedPreferences {
         this.defaultSharedPreferences = defaultSharedPreferences;
     }
 
+    public static SharedPreferences getPerAppSharedPreferences(Context context, String appPackage) {
+        if (PerAppSettings.VIRTUAL_APP_DEFAULT_SETTINGS.equals(appPackage)) {
+            return getDefaultAppSharedPreferences(context);
+        } else {
+            SharedPreferences defaultSharedPreferences = getDefaultAppSharedPreferences(context);
+            String filteredPackage = getSharedPreferencesNameFromPackage(appPackage);
+            SharedPreferences appSharedPreferences = context.getSharedPreferences(filteredPackage, Context
+                    .MODE_PRIVATE);
+
+            return new PerAppSharedPreferences(appSharedPreferences, defaultSharedPreferences);
+        }
+    }
+
+    public static SharedPreferences getDefaultAppSharedPreferences(Context context) {
+        String filteredPackage = getSharedPreferencesNameFromPackage(PerAppSettings.VIRTUAL_APP_DEFAULT_SETTINGS);
+        return context.getSharedPreferences(filteredPackage, Context.MODE_PRIVATE);
+    }
+
+    private static String getSharedPreferencesNameFromPackage(String pkg) {
+        return "app_".concat(filterAppName(pkg));
+    }
+
+    private static String filterAppName(String name) {
+        return name.replaceAll("[^0-9a-zA-Z ]", "_");
+    }
+
     @Override
     public Map<String, ?> getAll() {
         throw new UnsupportedOperationException();
@@ -107,7 +133,7 @@ public class PerAppSharedPreferences implements SharedPreferences {
 
         @Override
         public Editor putString(String key, String value) {
-            if (value.equals(defaultSharedPreferences.getString(key, value))) {
+            if (value.equals(defaultSharedPreferences.getString(key, null))) {
                 targetEditor.remove(key);
             } else {
                 targetEditor.putString(key, value);
@@ -118,7 +144,7 @@ public class PerAppSharedPreferences implements SharedPreferences {
 
         @Override
         public Editor putStringSet(String key, Set<String> values) {
-            if (values.equals(defaultSharedPreferences.getStringSet(key, values))) {
+            if (values.equals(defaultSharedPreferences.getStringSet(key, null))) {
                 targetEditor.remove(key);
             } else {
                 targetEditor.putStringSet(key, values);
@@ -129,7 +155,7 @@ public class PerAppSharedPreferences implements SharedPreferences {
 
         @Override
         public Editor putInt(String key, int value) {
-            if (value == defaultSharedPreferences.getInt(key, value)) {
+            if (defaultSharedPreferences.contains(key) && value == defaultSharedPreferences.getInt(key, 0)) {
                 targetEditor.remove(key);
             } else {
                 targetEditor.putInt(key, value);
@@ -140,7 +166,7 @@ public class PerAppSharedPreferences implements SharedPreferences {
 
         @Override
         public Editor putLong(String key, long value) {
-            if (value == defaultSharedPreferences.getLong(key, value)) {
+            if (defaultSharedPreferences.contains(key) && value == defaultSharedPreferences.getLong(key, 0)) {
                 targetEditor.remove(key);
             } else {
                 targetEditor.putLong(key, value);
@@ -151,7 +177,7 @@ public class PerAppSharedPreferences implements SharedPreferences {
 
         @Override
         public Editor putFloat(String key, float value) {
-            if (value == defaultSharedPreferences.getFloat(key, value)) {
+            if (defaultSharedPreferences.contains(key) && value == defaultSharedPreferences.getFloat(key, 0)) {
                 targetEditor.remove(key);
             } else {
                 targetEditor.putFloat(key, value);
@@ -162,7 +188,7 @@ public class PerAppSharedPreferences implements SharedPreferences {
 
         @Override
         public Editor putBoolean(String key, boolean value) {
-            if (value == defaultSharedPreferences.getBoolean(key, value)) {
+            if (defaultSharedPreferences.contains(key) && value == defaultSharedPreferences.getBoolean(key, false)) {
                 targetEditor.remove(key);
             } else {
                 targetEditor.putBoolean(key, value);
@@ -192,35 +218,6 @@ public class PerAppSharedPreferences implements SharedPreferences {
         public void apply() {
             targetEditor.apply();
         }
-    }
-
-    public static SharedPreferences getPerAppSharedPreferences(Context context, String appPackage)
-    {
-        if (PerAppSettings.VIRTUAL_APP_DEFAULT_SETTINGS.equals(appPackage)) {
-            return getDefaultAppSharedPreferences(context);
-        } else {
-            SharedPreferences defaultSharedPreferences = getDefaultAppSharedPreferences(context);
-            String filteredPackage = getSharedPreferencesNameFromPackage(appPackage);
-            SharedPreferences appSharedPreferences = context.getSharedPreferences(filteredPackage, Context.MODE_PRIVATE);
-
-            return new PerAppSharedPreferences(appSharedPreferences, defaultSharedPreferences);
-        }
-    }
-
-    public static SharedPreferences getDefaultAppSharedPreferences(Context context)
-    {
-        String filteredPackage = getSharedPreferencesNameFromPackage(PerAppSettings.VIRTUAL_APP_DEFAULT_SETTINGS);
-        return context.getSharedPreferences(filteredPackage, Context.MODE_PRIVATE);
-    }
-
-    private static String getSharedPreferencesNameFromPackage(String pkg)
-    {
-        return "app_".concat(filterAppName(pkg));
-    }
-
-    private static String filterAppName(String name)
-    {
-        return name.replaceAll("[^0-9a-zA-Z ]", "_");
     }
 
 }
