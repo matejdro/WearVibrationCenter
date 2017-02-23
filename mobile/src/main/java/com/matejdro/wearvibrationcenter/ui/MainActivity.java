@@ -87,6 +87,11 @@ public class MainActivity extends WearCompanionPhoneActivity implements Navigati
 
     private void switchToFragment(Fragment fragment)
     {
+        // Clear back stack
+        for (int i = 0; i < getFragmentManager().getBackStackEntryCount(); i++) {
+            getFragmentManager().popBackStack();
+        }
+
         getFragmentManager()
                 .beginTransaction()
                 .replace(R.id.content_frame, fragment)
@@ -131,7 +136,8 @@ public class MainActivity extends WearCompanionPhoneActivity implements Navigati
         }
         else if (item.getItemId() == R.id.default_per_app)
         {
-            switchToAppFragment(PerAppSettings.VIRTUAL_APP_DEFAULT_SETTINGS, getString(R.string.default_app_settings));
+            switchToFragment(PerAppSettingsFragment.newInstance(PerAppSettings.VIRTUAL_APP_DEFAULT_SETTINGS,
+                    getString(R.string.default_app_settings)));
         }
 
         drawerLayout.closeDrawers();
