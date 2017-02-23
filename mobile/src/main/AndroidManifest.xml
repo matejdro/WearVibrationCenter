@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.matejdro.wearvibrationcenter">
+<manifest package="com.matejdro.wearvibrationcenter"
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -27,8 +28,8 @@
 
         <activity
             android:name=".tasker.TaskerActionPickerActivity"
-            android:label="@string/tasker_actions_title"
-            android:exported="true">
+            android:exported="true"
+            android:label="@string/tasker_actions_title">
             <intent-filter>
                 <action android:name="com.twofortyfouram.locale.intent.action.EDIT_SETTING" />
             </intent-filter>
@@ -65,11 +66,14 @@
 
         <service
             android:name="pl.tajchert.exceptionwear.ExceptionDataListenerService"
-            tools:node="replace"
-            tools:ignore="ExportedService">
+            tools:ignore="ExportedService"
+            tools:node="replace">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
-                <data android:scheme="wear" android:host="*" android:pathPrefix="/exceptionwear/wear_error" />
+                <data
+                    android:host="*"
+                    android:pathPrefix="/exceptionwear/wear_error"
+                    android:scheme="wear"/>
             </intent-filter>
         </service>
     </application>

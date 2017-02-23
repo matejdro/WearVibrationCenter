@@ -47,4 +47,11 @@
     <string name="category_expert">Expert settings</string>
     <string name="licenses">Open source licenses</string>
     <string name="cancel_mute">Cancel mute</string>
+    <string name="required_permission">Required permission</string>
+    <string name="logs_storage_permission_explanation">To save logs, Vibration Center needs storage permission first.</string>
+    <string name="logs_attachment">Logs attachment</string>
+    <string name="logs_attachment_explanation">If not automatically attached, please manually
+        attach VibrationCenterLogs.log_zip from the phone\'s internal storage to the created e-mail.\n\nFeel free
+        to delete the
+        file after sending it.</string>
 </resources>

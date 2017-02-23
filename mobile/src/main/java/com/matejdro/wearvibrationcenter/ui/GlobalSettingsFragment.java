@@ -1,39 +1,27 @@
 package com.matejdro.wearvibrationcenter.ui;
 
+import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.ActivityNotFoundException;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.wearable.Channel;
 import com.google.android.gms.wearable.Wearable;
-import com.matejdro.wearutils.logging.FileLogger;
-import com.matejdro.wearutils.logging.LogReceiver;
-import com.matejdro.wearutils.messages.MessagingUtils;
-import com.matejdro.wearutils.messages.SingleChannelReceiver;
-import com.matejdro.wearvibrationcenter.common.CommPaths;
 import com.matejdro.wearutils.preferences.CustomStoragePreferenceFragment;
 import com.matejdro.wearutils.preferencesync.PreferencePusher;
 import com.matejdro.wearvibrationcenter.R;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import com.matejdro.wearvibrationcenter.common.CommPaths;
+import com.matejdro.wearvibrationcenter.logs.LogRetrievalTask;
 
 import de.psdev.licensesdialog.LicensesDialog;
-import timber.log.Timber;
 
 public class GlobalSettingsFragment extends CustomStoragePreferenceFragment implements TitleUtils.TitledFragment {
     private GoogleApiClient googleApiClient;
@@ -52,7 +40,7 @@ public class GlobalSettingsFragment extends CustomStoragePreferenceFragment impl
         findPreference("supportButton").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                new LogRetrievalTask().execute((Void) null);
+                sendLogs();
                 return true;
             }
         });
@@ -112,110 +100,38 @@ public class GlobalSettingsFragment extends CustomStoragePreferenceFragment impl
         return true;
     }
 
-    private class LogRetrievalTask extends AsyncTask<Void, Void, Boolean> {
-        private ProgressDialog loadingDialog;
-        private File zipOutFile;
+    private void sendLogs() {
+        if (ContextCompat.checkSelfPermission(getActivity(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 
-        @Override
-        protected void onPreExecute() {
-            loadingDialog = ProgressDialog.show(getActivity(), null, getString(R.string.getting_watch_logs), true);
+            AlertDialog permissionExplanationDialog = new AlertDialog.Builder(getActivity())
+                    .setTitle(R.string.required_permission)
+                    .setMessage(R.string.logs_storage_permission_explanation)
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @TargetApi(Build.VERSION_CODES.M)
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
+                        }
+                    })
+                    .create();
+
+            permissionExplanationDialog.show();
+            return;
         }
 
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            GoogleApiClient googleApiClient = new GoogleApiClient.Builder(getActivity())
-                    .addApi(Wearable.API)
-                    .build();
+        new LogRetrievalTask(GlobalSettingsFragment.this).execute((Void) null);
+    }
 
-            ConnectionResult connectionResult = googleApiClient.blockingConnect();
-            if (!connectionResult.isSuccess()) {
-                GoogleApiAvailability.getInstance().showErrorNotification(getActivity(), connectionResult);
-                return false;
-            }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[]
+            grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-            SingleChannelReceiver singleChannelReceiver = new SingleChannelReceiver(googleApiClient);
-
-            Wearable.MessageApi.sendMessage(googleApiClient, MessagingUtils.getOtherNodeId(googleApiClient), CommPaths.COMMAND_SEND_LOGS, null).await();
-
-            Channel channel;
-            try {
-                channel = singleChannelReceiver.get(2, TimeUnit.SECONDS);
-            } catch (InterruptedException ignored) {
-                return false;
-            } catch (TimeoutException ignored) {
-                return false;
-            }
-
-            boolean success = new LogReceiver(googleApiClient, "watch").receiveLogs(channel);
-
-            channel.close(googleApiClient).await();
-            googleApiClient.disconnect();
-
-            FileLogger.getInstance(getActivity()).deactivate();
-
-            File logsFolder = FileLogger.getInstance(getActivity()).getLogsFolder();
-            zipOutFile = new File(getActivity().getExternalCacheDir(), "logs.zip");
-            ZipOutputStream zipOutputStream = null;
-            try {
-                zipOutputStream = new ZipOutputStream(new FileOutputStream(zipOutFile));
-
-                for (File file : logsFolder.listFiles()) {
-                    ZipEntry zipEntry = new ZipEntry(file.getName());
-                    zipOutputStream.putNextEntry(zipEntry);
-
-                    byte[] buffer = new byte[1024];
-                    FileInputStream inputStream = new FileInputStream(file);
-                    int readBytes;
-                    while ((readBytes = inputStream.read(buffer)) > 0) {
-                        zipOutputStream.write(buffer, 0, readBytes);
-                    }
-                    inputStream.close();
-                }
-
-            } catch (Exception e) {
-                Timber.e(e, "Zip writing error");
-                return false;
-            } finally {
-                try {
-                    //noinspection ConstantConditions
-                    zipOutputStream.close();
-                } catch (Exception ignored) {
-                }
-
-                FileLogger.getInstance(getActivity()).activate();
-            }
-
-
-            return success;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            loadingDialog.dismiss();
-
-            if (success) {
-                Intent intent = new Intent(Intent.ACTION_SENDTO);
-                intent.setType("application/octet-stream");
-                intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(zipOutFile));
-
-                intent.setData(Uri.parse(getString(R.string.support_email)));
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                try {
-                    getActivity().startActivity(intent);
-                } catch (ActivityNotFoundException e) {
-                    new AlertDialog.Builder(getActivity())
-                            .setTitle(R.string.log_sending_failed)
-                            .setMessage(R.string.no_email_app_found)
-                            .setPositiveButton(android.R.string.ok, null)
-                            .show();
-                }
-            } else {
-                new AlertDialog.Builder(getActivity())
-                        .setTitle(R.string.log_sending_failed)
-                        .setMessage(R.string.log_retrieval_failed)
-                        .setPositiveButton(android.R.string.ok, null)
-                        .show();
-            }
+        if (permissions.length > 0 &&
+                permissions[0].equals(Manifest.permission.WRITE_EXTERNAL_STORAGE) &&
+                grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            sendLogs();
         }
     }
 }
