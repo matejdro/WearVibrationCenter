@@ -20,10 +20,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.matejdro.wearvibrationcenter.common.VibrationCommand;
 import com.matejdro.wearutils.miscutils.ArrayUtils;
 import com.matejdro.wearutils.miscutils.HtmlCompat;
 import com.matejdro.wearvibrationcenter.R;
+import com.matejdro.wearvibrationcenter.common.VibrationCommand;
 import com.matejdro.wearvibrationcenter.watch.WatchCommander;
 
 
@@ -139,6 +139,10 @@ public class VibrationPickerPreference extends DialogPreference {
     }
 
     private void onOkClicked() {
+        if (tapMode) {
+            toggleTapMode();
+        }
+
         if (parseAndValidateVibration() == null) {
             return;
         }
