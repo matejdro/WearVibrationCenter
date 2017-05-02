@@ -14,14 +14,14 @@ import com.google.android.gms.wearable.DataItemAsset;
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.wearable.WearableListenerService;
+import com.matejdro.wearutils.WatchUtils;
 import com.matejdro.wearutils.logging.LogTransmitter;
+import com.matejdro.wearutils.messages.ParcelPacker;
 import com.matejdro.wearvibrationcenter.common.AlarmCommand;
 import com.matejdro.wearvibrationcenter.common.CommPaths;
 import com.matejdro.wearvibrationcenter.common.InterruptionCommand;
 import com.matejdro.wearvibrationcenter.common.LiteAlarmCommand;
 import com.matejdro.wearvibrationcenter.common.VibrationCommand;
-import com.matejdro.wearutils.WatchUtils;
-import com.matejdro.wearutils.messages.ParcelPacker;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -30,6 +30,28 @@ import java.io.InputStream;
 import timber.log.Timber;
 
 public class PhoneCommandListener extends WearableListenerService {
+    @Nullable
+    private static byte[] readFully(InputStream in) {
+        if (in == null) {
+            return null;
+        }
+
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+
+        int bytesRead;
+        byte[] buffer = new byte[1024];
+
+        try {
+            while ((bytesRead = in.read(buffer, 0, buffer.length)) != -1) {
+                outStream.write(buffer, 0, bytesRead);
+            }
+        } catch (IOException ignored) {
+            return null;
+        }
+
+        return outStream.toByteArray();
+    }
+
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
         if (CommPaths.COMMAND_VIBRATE.equals(messageEvent.getPath())) {
@@ -128,34 +150,14 @@ public class PhoneCommandListener extends WearableListenerService {
 
         InputStream inputStream = Wearable.DataApi.getFdForAsset(connectedApiClient, asset).await().getInputStream();
         byte[] data = readFully(inputStream);
-        try {
-            inputStream.close();
-        } catch (IOException ignored) {
+        if (data != null) {
+            try {
+                inputStream.close();
+            } catch (IOException ignored) {
+            }
         }
 
         return data;
-    }
-
-    @Nullable
-    private static byte[] readFully(InputStream in) {
-        if (in == null) {
-            return null;
-        }
-
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-
-        int bytesRead;
-        byte[] buffer = new byte[1024];
-
-        try {
-            while ((bytesRead = in.read(buffer, 0, buffer.length)) != -1) {
-                outStream.write(buffer, 0, bytesRead);
-            }
-        } catch (IOException ignored) {
-            return null;
-        }
-
-        return outStream.toByteArray();
     }
 
 }
