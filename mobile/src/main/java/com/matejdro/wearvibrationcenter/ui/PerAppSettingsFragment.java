@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import com.matejdro.wearutils.preferences.CustomStoragePreferenceFragment;
+import com.matejdro.wearutils.preferences.PreferenceSource;
 import com.matejdro.wearvibrationcenter.R;
 import com.matejdro.wearvibrationcenter.preferences.PerAppSharedPreferences;
 
@@ -34,7 +35,10 @@ public class PerAppSettingsFragment extends CustomStoragePreferenceFragment impl
         appLabel = arguments.getString(ARGUMENT_LABEL);
         String appPackage = arguments.getString(ARGUMENT_PACKAGE);
 
-        injectSharedPreferences(getPreferences(appPackage));
+        // If activity does not provide override preferences, define our own
+        if (!(getActivity() instanceof PreferenceSource)) {
+            injectSharedPreferences(getPreferences(appPackage));
+        }
 
         addPreferencesFromResource(R.xml.perapp_settings);
     }
