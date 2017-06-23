@@ -13,13 +13,14 @@ import android.support.wearable.activity.ConfirmationActivity;
 import android.support.wearable.activity.WearableActivity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.matejdro.wearvibrationcenter.common.AlarmCommand;
 import com.matejdro.wearutils.miscutils.BitmapUtils;
 import com.matejdro.wearutils.preferences.definition.Preferences;
+import com.matejdro.wearvibrationcenter.common.AlarmCommand;
 import com.matejdro.wearvibrationcenter.preferences.GlobalSettings;
 
 import timber.log.Timber;
@@ -54,6 +55,8 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setAmbientEnabled();
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
         alarmCommand = getIntent().getParcelableExtra(EXTRA_ALARM_COMMAND);
         if (alarmCommand == null) {
