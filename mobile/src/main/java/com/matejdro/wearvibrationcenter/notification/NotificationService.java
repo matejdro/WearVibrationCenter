@@ -136,9 +136,9 @@ public class NotificationService extends NotificationListenerService {
             } else {
                 return notifications;
             }
-        } catch (SecurityException ignored) {
-            // Sometimes notification service will unbind without notice
-            Timber.w("Notification service got killed!");
+        } catch (Exception ignored) {
+            // Sometimes notification service will throw internal exception
+            Timber.w("Notification service threw error!");
             return new StatusBarNotification[0];
         }
     }
