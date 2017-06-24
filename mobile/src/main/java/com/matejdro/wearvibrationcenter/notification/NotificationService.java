@@ -29,20 +29,24 @@ public class NotificationService extends NotificationListenerService {
     public static final int MESSAGE_UPDATE_ACTIVE_LIST = 3;
 
     public static boolean active;
+    private final LinkedList<ProcessedNotification> pendingNotifications = new LinkedList<>();
     private Handler handler;
-
     /**
      * To determine whether notification is new or just an update of old notification,
      * we need a list of previous notifications before new one appeared
      */
     private StatusBarNotification[] previousList = new StatusBarNotification[0];
-    private final LinkedList<ProcessedNotification> pendingNotifications = new LinkedList<>();
-
     private NotificationProcessor processor;
     private TimedMuteManager timedMuteManager;
     private AppMuteManager appMuteManager;
 
     private SharedPreferences globalSettings;
+
+    public static boolean prefilterNotification(StatusBarNotification statusBarNotification) {
+        return statusBarNotification.isClearable()
+                &&
+                !NotificationCompat.getLocalOnly(statusBarNotification.getNotification());
+    }
 
     @Override
     public void onDestroy() {
@@ -126,18 +130,17 @@ public class NotificationService extends NotificationListenerService {
     @Override
     public StatusBarNotification[] getActiveNotifications() {
         try {
-            return super.getActiveNotifications();
+            StatusBarNotification[] notifications = super.getActiveNotifications();
+            if (notifications == null) {
+                return new StatusBarNotification[0];
+            } else {
+                return notifications;
+            }
         } catch (SecurityException ignored) {
             // Sometimes notification service will unbind without notice
             Timber.w("Notification service got killed!");
             return new StatusBarNotification[0];
         }
-    }
-
-    public static boolean prefilterNotification(StatusBarNotification statusBarNotification) {
-        return statusBarNotification.isClearable()
-                &&
-                !NotificationCompat.getLocalOnly(statusBarNotification.getNotification());
     }
 
     public SharedPreferences getGlobalSettings() {
