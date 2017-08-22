@@ -50,6 +50,12 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
 
     private Vibrator vibrator;
     private Handler mainThreadHandler;
+    private Runnable vibrationRestartRunnable = new Runnable() {
+        @Override
+        public void run() {
+            restartVibrator();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,7 +155,14 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
     }
 
     private void restartVibrator() {
-        vibrator.vibrate(alarmCommand.getVibrationPattern(), 0);
+        int vibrationTimeSum = 0;
+        for (long vibElem : alarmCommand.getVibrationPattern()) {
+            vibrationTimeSum += vibElem;
+        }
+
+        vibrator.vibrate(alarmCommand.getVibrationPattern(), -1);
+        mainThreadHandler.removeCallbacks(vibrationRestartRunnable);
+        mainThreadHandler.postDelayed(vibrationRestartRunnable, vibrationTimeSum);
     }
 
     @Override
@@ -214,12 +227,8 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
 
         // Vibration will stop when entering ambient some time after this method has been called.
         // Re-start vibration after a short delay.
-        mainThreadHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                restartVibrator();
-            }
-        }, 500);
+        mainThreadHandler.removeCallbacks(vibrationRestartRunnable);
+        mainThreadHandler.postDelayed(vibrationRestartRunnable, 500);
     }
 
     @Override
