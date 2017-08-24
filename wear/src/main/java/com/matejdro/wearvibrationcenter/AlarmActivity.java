@@ -176,11 +176,13 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
     }
 
     @Override
-    protected void onStop() {
-        vibrator.cancel();
-        mainThreadHandler.removeCallbacksAndMessages(null);
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
 
-        super.onStop();
+        if (!hasFocus) {
+            vibrator.cancel();
+            mainThreadHandler.removeCallbacksAndMessages(null);
+        }
     }
 
     @Override
