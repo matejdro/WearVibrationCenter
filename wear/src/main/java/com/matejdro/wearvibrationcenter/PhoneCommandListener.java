@@ -118,7 +118,7 @@ public class PhoneCommandListener extends WearableListenerService {
 
         Intent alarmActivityIntent = new Intent(this, AlarmActivity.class);
         alarmActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        alarmActivityIntent.putExtra(AlarmActivity.EXTRA_ALARM_COMMAND, alarmCommand);
+        alarmActivityIntent.putExtra(AlarmActivity.EXTRA_ALARM_COMMAND_BYTES, ParcelPacker.getData(alarmCommand));
         startActivity(alarmActivityIntent);
     }
 

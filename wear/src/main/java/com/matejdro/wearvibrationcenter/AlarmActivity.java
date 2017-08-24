@@ -18,6 +18,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.matejdro.wearutils.messages.ParcelPacker;
 import com.matejdro.wearutils.miscutils.BitmapUtils;
 import com.matejdro.wearutils.preferences.definition.Preferences;
 import com.matejdro.wearvibrationcenter.common.AlarmCommand;
@@ -26,7 +27,7 @@ import com.matejdro.wearvibrationcenter.preferences.GlobalSettings;
 import timber.log.Timber;
 
 public class AlarmActivity extends WearableActivity implements View.OnTouchListener {
-    public static final String EXTRA_ALARM_COMMAND = "ALarmCommand";
+    public static final String EXTRA_ALARM_COMMAND_BYTES = "AlarmCommandBytes";
 
     private int displayWidth;
 
@@ -64,12 +65,14 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
-        alarmCommand = getIntent().getParcelableExtra(EXTRA_ALARM_COMMAND);
-        if (alarmCommand == null) {
+        byte[] alarmCommandData = getIntent().getByteArrayExtra(EXTRA_ALARM_COMMAND_BYTES);
+        if (alarmCommandData == null) {
             Timber.e("No alarm intent!");
             finish();
             return;
         }
+
+        alarmCommand = ParcelPacker.getParcelable(alarmCommandData, AlarmCommand.CREATOR);
 
         setContentView(R.layout.activity_alarm);
 
@@ -206,7 +209,7 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
 
         Intent alarmActivityIntent = new Intent(this, AlarmActivity.class);
         alarmActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        alarmActivityIntent.putExtra(AlarmActivity.EXTRA_ALARM_COMMAND, alarmCommand);
+        alarmActivityIntent.putExtra(AlarmActivity.EXTRA_ALARM_COMMAND_BYTES, ParcelPacker.getData(alarmCommand));
         startActivity(alarmActivityIntent);
 
         PendingIntent alarmPendingIntent = PendingIntent.getActivity(this, 0, alarmActivityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
