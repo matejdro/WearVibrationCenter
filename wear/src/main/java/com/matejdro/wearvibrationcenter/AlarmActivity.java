@@ -163,6 +163,7 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
             vibrationTimeSum += vibElem;
         }
 
+        vibrator.cancel();
         vibrator.vibrate(alarmCommand.getVibrationPattern(), -1);
         mainThreadHandler.removeCallbacks(vibrationRestartRunnable);
         mainThreadHandler.postDelayed(vibrationRestartRunnable, vibrationTimeSum);
