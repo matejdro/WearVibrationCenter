@@ -9,17 +9,20 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.Preference;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.Wearable;
+import com.matejdro.wearutils.logging.LogRetrievalTask;
 import com.matejdro.wearutils.preferences.CustomStoragePreferenceFragment;
 import com.matejdro.wearutils.preferencesync.PreferencePusher;
 import com.matejdro.wearvibrationcenter.R;
 import com.matejdro.wearvibrationcenter.common.CommPaths;
-import com.matejdro.wearvibrationcenter.logs.LogRetrievalTask;
+
+import java.io.File;
 
 import de.psdev.licensesdialog.LicensesDialog;
 
@@ -120,7 +123,11 @@ public class GlobalSettingsFragment extends CustomStoragePreferenceFragment impl
             return;
         }
 
-        new LogRetrievalTask(GlobalSettingsFragment.this).execute((Void) null);
+        File targetFile = new File(Environment.getExternalStorageDirectory(), "VibrationCenterLogs.log_zip");
+        new LogRetrievalTask(getActivity(),
+                CommPaths.COMMAND_SEND_LOGS,
+                "matejdro@gmail.com",
+                targetFile).execute((Void) null);
     }
 
     @Override

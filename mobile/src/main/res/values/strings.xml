@@ -26,11 +26,7 @@
     <string name="add">Add</string>
     <string name="vibrations_muted_notification_title">Wear vibrations muted</string>
     <string name="vibrations_muted_notification_explanation">Dismiss this notification to unmute.</string>
-    <string name="getting_watch_logs">Getting logs from the watch…</string>
     <string name="get_support">Get support</string>
-    <string name="no_email_app_found">No email application found.</string>
-    <string name="log_sending_failed">Log sending failed</string>
-    <string name="log_retrieval_failed">Failed to retrieve log data from the watch. Check the watch connection and retry.</string>
     <string name="support_email">mailto:matejdro+support@gmail.com</string>
     <string name="get_support_description">Send application logs to the developer for the support</string>
     <string name="tasker_start_alarm">Start on-watch alarm</string>
@@ -49,9 +45,4 @@
     <string name="cancel_mute">Cancel mute</string>
     <string name="required_permission">Required permission</string>
     <string name="logs_storage_permission_explanation">To save logs, Vibration Center needs storage permission first.</string>
-    <string name="logs_attachment">Logs attachment</string>
-    <string name="logs_attachment_explanation">If not automatically attached, please manually
-        attach VibrationCenterLogs.log_zip from the phone\'s internal storage to the created e-mail.\n\nFeel free
-        to delete the
-        file after sending it.</string>
 </resources>
