@@ -27,7 +27,6 @@
     <string name="vibrations_muted_notification_title">Wear vibrations muted</string>
     <string name="vibrations_muted_notification_explanation">Dismiss this notification to unmute.</string>
     <string name="get_support">Get support</string>
-    <string name="support_email">mailto:matejdro+support@gmail.com</string>
     <string name="get_support_description">Send application logs to the developer for the support</string>
     <string name="tasker_start_alarm">Start on-watch alarm</string>
     <string name="tasker_start_alarm_with_name">Start on-watch alarm %1$s</string>

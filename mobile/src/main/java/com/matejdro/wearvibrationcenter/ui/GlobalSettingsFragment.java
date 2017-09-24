@@ -126,7 +126,7 @@ public class GlobalSettingsFragment extends CustomStoragePreferenceFragment impl
         File targetFile = new File(Environment.getExternalStorageDirectory(), "VibrationCenterLogs.log_zip");
         new LogRetrievalTask(getActivity(),
                 CommPaths.COMMAND_SEND_LOGS,
-                "matejdro@gmail.com",
+                "matejdro+support@gmail.com",
                 targetFile).execute((Void) null);
     }
 
