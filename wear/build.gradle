@@ -2,15 +2,15 @@ apply plugin: 'com.android.application'
 
 //noinspection GroovyMissingReturnStatement
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.1"
-    publishNonDefault true
+    compileSdkVersion 27
     defaultConfig {
         applicationId "com.matejdro.wearvibrationcenter"
         minSdkVersion 23
-        targetSdkVersion 26
+        targetSdkVersion 27
         versionCode 111
         versionName "1.0.6"
+        flavorDimensions "default"
+
     }
     buildTypes {
         release {
@@ -22,10 +22,12 @@ android {
     productFlavors {
         //noinspection GroovyMissingReturnStatement
         wear1 {
+            dimension "default"
         }
         //noinspection GroovyMissingReturnStatement
         wear2 {
             minSdkVersion 24
+            dimension "default"
         }
     }
 }
@@ -33,9 +35,9 @@ android {
 dependencies {
     compile project(':common')
     compile project(':wearutils')
-    compile 'com.google.android.support:wearable:2.0.4'
-    provided 'com.google.android.wearable:wearable:2.0.4'
-    compile 'com.google.android.gms:play-services-wearable:11.0.4'
+    compile 'com.google.android.support:wearable:2.1.0'
+    provided 'com.google.android.wearable:wearable:2.1.0'
+    compile 'com.google.android.gms:play-services-wearable:11.4.2'
 }
 
 allprojects {
