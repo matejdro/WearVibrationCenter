@@ -3,7 +3,7 @@ package com.matejdro.wearvibrationcenter.ui;
 import android.content.Context;
 import android.util.AttributeSet;
 
-import com.matejdro.wearutils.preferences.StringListPreference;
+import com.matejdro.wearutils.preferences.legacy.StringListPreference;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;

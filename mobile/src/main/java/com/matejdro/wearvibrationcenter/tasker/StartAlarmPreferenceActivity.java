@@ -6,10 +6,10 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.matejdro.wearutils.preferences.CustomStoragePreferenceFragment;
 import com.matejdro.wearutils.preferences.definition.PreferenceDefinition;
 import com.matejdro.wearutils.preferences.definition.Preferences;
 import com.matejdro.wearutils.preferences.definition.SimplePreferenceDefinition;
+import com.matejdro.wearutils.preferences.legacy.CustomStoragePreferenceFragment;
 import com.matejdro.wearutils.tasker.TaskerPreferenceActivity;
 import com.matejdro.wearvibrationcenter.R;
 

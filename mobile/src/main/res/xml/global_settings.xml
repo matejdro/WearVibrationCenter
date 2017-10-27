@@ -18,11 +18,11 @@
         android:key="cat_alarm"
         android:title="@string/category_alarm">
 
-        <com.matejdro.wearutils.preferences.NumericEditTextPreference
+        <com.matejdro.wearutils.preferences.legacy.NumericEditTextPreference
+            android:defaultValue="30"
             android:key="alarm_timeout"
-            android:title="@string/setting_alarm_timeout"
             android:summary="@string/setting_alarm_timeout_description"
-            android:defaultValue="30"/>
+            android:title="@string/setting_alarm_timeout" />
 
     </PreferenceCategory>
 
@@ -30,20 +30,20 @@
         android:key="cat_muter"
         android:title="@string/category_watchapp">
 
-        <com.matejdro.wearutils.preferences.StringNumberListPreference
-            android:key="mute_intervals"
-            android:title="@string/setting_mute_intervals"
-            android:summary="@string/setting_mute_intervals_description"
+        <com.matejdro.wearutils.preferences.legacy.StringNumberListPreference
             android:defaultValue="[&quot;10&quot;, &quot;20&quot;, &quot;30&quot;, &quot;60&quot;, &quot;120&quot;]"
+            android:key="mute_intervals"
+            android:summary="@string/setting_mute_intervals_description"
+            android:title="@string/setting_mute_intervals"
             />
 
-        <com.matejdro.wearutils.preferences.HtmlSummaryListPreference
-            android:key="timed_mute_zen"
-            android:title="@string/setting_timed_mute_zen"
-            android:summary="@string/setting_timed_mute_zen_description"
+        <com.matejdro.wearutils.preferences.legacy.HtmlSummaryListPreference
+            android:defaultValue="ALARMS"
             android:entries="@array/zen_change_labels"
             android:entryValues="@array/zen_change_values"
-            android:defaultValue="ALARMS"/>
+            android:key="timed_mute_zen"
+            android:summary="@string/setting_timed_mute_zen_description"
+            android:title="@string/setting_timed_mute_zen" />
 
     </PreferenceCategory>
 
@@ -51,11 +51,11 @@
         android:key="cat_expert"
         android:title="@string/category_expert">
 
-        <com.matejdro.wearutils.preferences.NumericEditTextPreference
+        <com.matejdro.wearutils.preferences.legacy.NumericEditTextPreference
+            android:defaultValue="2000"
             android:key="processing_delay"
-            android:title="@string/setting_processing_delay"
             android:summary="@string/setting_processing_delay_description"
-            android:defaultValue="2000"/>
+            android:title="@string/setting_processing_delay" />
 
     </PreferenceCategory>
 
@@ -67,15 +67,15 @@
             android:title="@string/installed_version"/>
         <Preference
             android:key="supportButton"
-            android:title="@string/get_support"
-            android:summary="@string/get_support_description"/>
+            android:summary="@string/get_support_description"
+            android:title="@string/get_support" />
         <Preference
             android:key="licenses"
             android:title="@string/licenses"/>
         <Preference
             android:key="donateButton"
-            android:title="@string/donate"
-            android:summary="@string/donate_description"/>
+            android:summary="@string/donate_description"
+            android:title="@string/donate" />
     </PreferenceCategory>
 
 </PreferenceScreen>

@@ -3,8 +3,8 @@ package com.matejdro.wearvibrationcenter.ui;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
-import com.matejdro.wearutils.preferences.CustomStoragePreferenceFragment;
 import com.matejdro.wearutils.preferences.PreferenceSource;
+import com.matejdro.wearutils.preferences.legacy.CustomStoragePreferenceFragment;
 import com.matejdro.wearvibrationcenter.R;
 import com.matejdro.wearvibrationcenter.preferences.PerAppSharedPreferences;
 
