@@ -143,7 +143,7 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
             }
 
             previousZenMode = service.getCurrentInterruptionFilter();
-            service.requestInterruptionFilter(newZenMode);
+            service.requestInterruptionFilterSafe(newZenMode);
         }
     }
 
@@ -157,7 +157,7 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
         handler.removeCallbacksAndMessages(null);
 
         if (previousZenMode != 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            service.requestInterruptionFilter(previousZenMode);
+            service.requestInterruptionFilterSafe(previousZenMode);
             previousZenMode = 0;
         }
     }

@@ -1,6 +1,8 @@
 package com.matejdro.wearvibrationcenter.notification;
 
+import android.annotation.TargetApi;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
@@ -143,8 +145,18 @@ public class NotificationService extends NotificationListenerService {
         }
     }
 
+
     public SharedPreferences getGlobalSettings() {
         return globalSettings;
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void requestInterruptionFilterSafe(int interruptionFilter) {
+        try {
+            requestInterruptionFilter(interruptionFilter);
+        } catch (SecurityException e) {
+            Timber.w("Notification listener has been disabled before unmute.");
+        }
     }
 
     private void fillMetadata(ProcessedNotification notification)
