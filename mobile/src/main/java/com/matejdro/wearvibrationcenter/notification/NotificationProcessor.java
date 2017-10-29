@@ -15,6 +15,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.util.ArrayMap;
 
+import com.matejdro.wearutils.miscutils.DeviceUtils;
 import com.matejdro.wearvibrationcenter.common.AlarmCommand;
 import com.matejdro.wearvibrationcenter.common.VibrationCommand;
 import com.matejdro.wearutils.miscutils.BitmapUtils;
@@ -150,6 +151,12 @@ public class NotificationProcessor {
                 Timber.d("Filter fail - zen mode");
                 return false;
             }
+        }
+
+        if (Preferences.getBoolean(appPreferences, PerAppSettings.NO_VIBRATIONS_SCREEN_ON) &&
+                DeviceUtils.isScreenOn(service)) {
+            Timber.d("Filter fail - screen on");
+            return false;
         }
 
         int minVibrationInterval = Preferences.getInt(appPreferences, PerAppSettings.MIN_VIBRATION_INTERVAL);

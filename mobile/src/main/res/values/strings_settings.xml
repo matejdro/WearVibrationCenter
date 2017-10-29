@@ -25,6 +25,10 @@
     <string name="setting_respect_theater_mode">Do not vibrate in theater mode</string>
     <string name="setting_respect_theater_mode_on_description">VC will <![CDATA[<b>NOT</b>]]> create additional vibrations when in theater mode.</string>
     <string name="setting_respect_theater_mode_off_description">VC <![CDATA[<b>WILL</b>]]> create additional vibrations regardless of the theater mode.</string>
+
+    <string name="setting_no_vibration_screen_on">Do not vibrate when phone\'s screen is on</string>
+    <string name="setting_no_vibration_screen_on_on_description">VC will <![CDATA[<b>NOT</b>]]> create additional vibrations when phone\'s screen is on.</string>
+    <string name="setting_no_vibration_screen_on_off_description">VC <![CDATA[<b>WILL</b>]]> create additional vibrations when phone\'s screen is on.</string>
     <string name="setting_respect_charging">Do not vibrate when charging</string>
     <string name="setting_respect_charging_on_description">VC will <![CDATA[<b>NOT</b>]]> create additional vibrations when watch is charging.</string>
     <string name="setting_respect_charging_off_description">VC <![CDATA[<b>WILL</b>]]> create additional vibrations regardless of the watch\'s charging state.</string>

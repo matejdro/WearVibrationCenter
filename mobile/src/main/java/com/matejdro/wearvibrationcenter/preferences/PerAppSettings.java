@@ -17,6 +17,7 @@ public class PerAppSettings {
     public static final PreferenceDefinition<Integer> MIN_VIBRATION_INTERVAL = new SimplePreferenceDefinition<>("min_vibration_interval", 5000);
     public static final PreferenceDefinition<Boolean> NO_UPDATE_VIBRATIONS = new SimplePreferenceDefinition<>("setting_no_update_vibration", false);
     public static final PreferenceDefinition<Boolean> NO_SUBSEQUENT_NOTIFICATION_VIBRATIONS = new SimplePreferenceDefinition<>("setting_no_subsequent_notification_vibration", false);
+    public static final PreferenceDefinition<Boolean> NO_VIBRATIONS_SCREEN_ON = new SimplePreferenceDefinition<>("no_vibration_screen_on", false);
 
     public static final PreferenceDefinition<Boolean> RESPECT_THETAER_MODE = new SimplePreferenceDefinition<>("respect_theater_mode", true);
     public static final PreferenceDefinition<Boolean> RESPECT_CHARGING = new SimplePreferenceDefinition<>("respect_charging", true);
