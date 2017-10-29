@@ -78,8 +78,8 @@ public class VibrationPickerPreference extends DialogPreference {
         @SuppressLint("InflateParams")
         ViewGroup root = (ViewGroup) LayoutInflater.from(getContext()).inflate(R.layout.vibration_pattern_picker, null);
 
-        vibrationPatternBox = (EditText) root.findViewById(R.id.pattern_box);
-        tapActivationButton = (Button) root.findViewById(R.id.tap_button);
+        vibrationPatternBox = root.findViewById(R.id.pattern_box);
+        tapActivationButton = root.findViewById(R.id.tap_button);
         vibrationTapperBox = root.findViewById(R.id.tap_box);
 
         vibrationPatternBox.setText(savedTapPattern);
@@ -237,7 +237,10 @@ public class VibrationPickerPreference extends DialogPreference {
             return;
         }
 
-        WatchCommander.sendVibrationCommand(getContext(), new VibrationCommand(pattern, false, false));
+        WatchCommander.sendVibrationCommand(getContext(), new VibrationCommand(pattern,
+                false,
+                false,
+                false));
     }
 
 

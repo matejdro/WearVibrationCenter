@@ -15,12 +15,12 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.util.ArrayMap;
 
-import com.matejdro.wearutils.miscutils.DeviceUtils;
-import com.matejdro.wearvibrationcenter.common.AlarmCommand;
-import com.matejdro.wearvibrationcenter.common.VibrationCommand;
 import com.matejdro.wearutils.miscutils.BitmapUtils;
+import com.matejdro.wearutils.miscutils.DeviceUtils;
 import com.matejdro.wearutils.miscutils.TextUtils;
 import com.matejdro.wearutils.preferences.definition.Preferences;
+import com.matejdro.wearvibrationcenter.common.AlarmCommand;
+import com.matejdro.wearvibrationcenter.common.VibrationCommand;
 import com.matejdro.wearvibrationcenter.preferences.PerAppSettings;
 import com.matejdro.wearvibrationcenter.preferences.VibrationType;
 import com.matejdro.wearvibrationcenter.watch.WatchCommander;
@@ -48,6 +48,7 @@ public class NotificationProcessor {
         int longestPatternLength = -1;
         boolean respectTheater = true;
         boolean respectCharger = true;
+        boolean forceScreenOn = false;
 
         for (ProcessedNotification notification : pendingNotifications) {
             SharedPreferences appPreferences = notification.getAppPreferences();
@@ -87,6 +88,7 @@ public class NotificationProcessor {
 
             respectTheater = respectTheater && Preferences.getBoolean(appPreferences, PerAppSettings.RESPECT_THETAER_MODE);
             respectCharger = respectCharger && Preferences.getBoolean(appPreferences, PerAppSettings.RESPECT_CHARGING);
+            forceScreenOn = respectCharger || Preferences.getBoolean(appPreferences, PerAppSettings.TURN_SCREEN_ON);
 
             lastVibrations.put(notification.getContentNotification().getPackageName(), System.currentTimeMillis());
         }
@@ -98,7 +100,10 @@ public class NotificationProcessor {
             return;
         }
 
-        final VibrationCommand vibrationCommand = new VibrationCommand(longestPattern, respectTheater, respectCharger);
+        final VibrationCommand vibrationCommand = new VibrationCommand(longestPattern,
+                respectTheater,
+                respectCharger,
+                forceScreenOn);
         WatchCommander.sendVibrationCommand(service, vibrationCommand);
     }
 

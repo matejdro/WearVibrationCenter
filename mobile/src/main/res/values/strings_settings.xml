@@ -41,6 +41,10 @@
 
     <string name="setting_vibration_pattern">Vibration pattern</string>
     <string name="setting_vibration_pattern_description">%1$s</string>
+    <string name="setting_turn_screen_on">Turn watch\'s screen on</string>
+    <string name="setting_turn_screen_on_description_on">When vibrating, VC <![CDATA[<b>WILL</b>]]> force turn on watch\'s display.</string>
+    <string name="setting_turn_screen_on_description_off">VC will <![CDATA[<b>NOT</b>]]> force turn on watch\'s display. Please not that Android Wear itself may still turn on the screen instead. VC cannot control this, put the watch into do not disturb mode to prevent it.</string>
+
     <string name="category_spam_filter">Spam filter</string>
     <string name="setting_min_vibration_interval">Minimum time between vibrations</string>
     <string name="setting_min_vibration_interval_description">VC will not create any additional vibration if previous notification from this app vibrated less than <![CDATA[<b>%1$s</b>]]> milliseconds ago.</string>

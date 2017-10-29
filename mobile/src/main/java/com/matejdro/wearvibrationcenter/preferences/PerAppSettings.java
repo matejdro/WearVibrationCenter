@@ -11,6 +11,8 @@ public class PerAppSettings {
 
     public static final EnumPreferenceDefinition<VibrationType> VIBRATION_TYPE = new EnumPreferenceDefinition<>("vibration_type", VibrationType.REGULAR);
     public static final PreferenceDefinition<long[]> VIBRATION_PATTERN = new SimplePreferenceDefinition<>("vibration_pattern", new long[] { 0, 500, 250, 500, 250, 500, 1000 });
+    public static final PreferenceDefinition<Boolean> TURN_SCREEN_ON = new SimplePreferenceDefinition<>("turn_screen_on", false);
+
     public static final PreferenceDefinition<Boolean> ONLY_VIBRATE_ORIGINAL_VIBRATING = new SimplePreferenceDefinition<>("only_vibrate_original_vibrating", true);
     public static final PreferenceDefinition<Boolean> RESPECT_ZEN_MODE = new SimplePreferenceDefinition<>("setting_respect_zen_mode", false);
 

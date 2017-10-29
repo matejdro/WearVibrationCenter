@@ -19,6 +19,14 @@
             android:summary="@string/setting_vibration_pattern_description"
             android:title="@string/setting_vibration_pattern" />
 
+        <com.matejdro.wearutils.preferences.legacy.SwitchPreferenceEx
+            android:defaultValue="false"
+            android:key="turn_screen_on"
+            android:summaryOff="@string/setting_turn_screen_on_description_off"
+            android:summaryOn="@string/setting_turn_screen_on_description_on"
+            android:title="@string/setting_turn_screen_on" />
+
+
     </PreferenceCategory>
 
     <PreferenceCategory

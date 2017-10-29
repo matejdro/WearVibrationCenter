@@ -1,8 +1,10 @@
 package com.matejdro.wearvibrationcenter;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
+import android.os.PowerManager;
 import android.os.Vibrator;
 import android.support.annotation.Nullable;
 
@@ -109,6 +111,19 @@ public class PhoneCommandListener extends WearableListenerService {
 
         Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         vibrator.vibrate(vibrationCommand.getPattern(), -1);
+
+        Timber.d("ForceOn: %b", vibrationCommand.shouldForceTurnScreenOn());
+        if (vibrationCommand.shouldForceTurnScreenOn()) {
+            // Acquire very brief screen wakelock to wake the screen up
+
+            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            assert pm != null;
+            @SuppressWarnings("deprecation") // There appears to be no non-deprecated way to do this
+                    PowerManager.WakeLock wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK
+                    | PowerManager.ACQUIRE_CAUSES_WAKEUP
+                    | PowerManager.ON_AFTER_RELEASE, "Vibration Center screen wake");
+            wakeLock.acquire(1);
+        }
     }
 
     private void alarm(AlarmCommand alarmCommand) {
