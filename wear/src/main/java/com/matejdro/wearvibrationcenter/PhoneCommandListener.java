@@ -112,7 +112,6 @@ public class PhoneCommandListener extends WearableListenerService {
         Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         vibrator.vibrate(vibrationCommand.getPattern(), -1);
 
-        Timber.d("ForceOn: %b", vibrationCommand.shouldForceTurnScreenOn());
         if (vibrationCommand.shouldForceTurnScreenOn()) {
             // Acquire very brief screen wakelock to wake the screen up
 
