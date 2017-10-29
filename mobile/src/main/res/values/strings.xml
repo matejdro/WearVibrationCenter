@@ -44,4 +44,5 @@
     <string name="cancel_mute">Cancel mute</string>
     <string name="required_permission">Required permission</string>
     <string name="logs_storage_permission_explanation">To save logs, Vibration Center needs storage permission first.</string>
+    <string name="temporary_mute_channel_name">Temporary mute notifications</string>
 </resources>

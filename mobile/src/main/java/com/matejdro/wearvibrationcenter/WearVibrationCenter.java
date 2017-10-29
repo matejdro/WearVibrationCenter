@@ -7,6 +7,7 @@ import com.crashlytics.android.Crashlytics;
 import com.matejdro.wearutils.logging.FileLogger;
 import com.matejdro.wearvibrationcenter.logging.CrashlyticsExceptionWearHandler;
 import com.matejdro.wearvibrationcenter.logging.TimberCrashlytics;
+import com.matejdro.wearvibrationcenter.notification.VibrationCenterChannels;
 
 import io.fabric.sdk.android.Fabric;
 import pl.tajchert.exceptionwear.ExceptionDataListenerService;
@@ -31,5 +32,7 @@ public class WearVibrationCenter extends Application {
         FileLogger fileLogger = FileLogger.getInstance(this);
         fileLogger.activate();
         Timber.plant(fileLogger);
+
+        VibrationCenterChannels.init(this);
     }
 }

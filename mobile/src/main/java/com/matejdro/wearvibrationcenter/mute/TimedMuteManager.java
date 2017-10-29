@@ -29,6 +29,7 @@ import com.matejdro.wearutils.messages.ParcelPacker;
 import com.matejdro.wearutils.preferences.definition.Preferences;
 import com.matejdro.wearvibrationcenter.R;
 import com.matejdro.wearvibrationcenter.notification.NotificationService;
+import com.matejdro.wearvibrationcenter.notification.VibrationCenterChannels;
 import com.matejdro.wearvibrationcenter.preferences.ZenModeChange;
 import com.matejdro.wearvibrationcenter.preferences.GlobalSettings;
 
@@ -84,7 +85,7 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
 
         PendingIntent unmutePendingIntent = PendingIntent.getBroadcast(service, 0, new Intent(ACTON_UNMUTE), PendingIntent.FLAG_UPDATE_CURRENT);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(service)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(service, VibrationCenterChannels.CHANNEL_TEMPORARY_MUTE)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setPriority(Notification.PRIORITY_MIN)
                 .setDeleteIntent(unmutePendingIntent)
