@@ -54,6 +54,9 @@
     <string name="setting_no_subsequent_notification_vibration">Do not vibrate for subsequent notifications</string>
     <string name="setting_no_subsequent_notification_vibration_on_description">VC will <![CDATA[<b>ONLY</b>]]> vibrate for first notification from this app. <![CDATA[<br /><br />]]>For example if you already have email notification on your watch and you got another email notification, VC will <![CDATA[<b>NOT</b>]]> vibrate for these subsequent emails.</string>
     <string name="setting_no_subsequent_notification_vibration_off_description">VC will vibrate for <![CDATA[<b>ALL</b>]]> notifications from this app, first and subsequent ones. <![CDATA[<br /><br />]]>For example if you already have email notification on your watch and you got another email notification, VC will <![CDATA[<b>ALSO</b>]]> vibrate for these subsequent emails.</string>
+    <string name="setting_ignore_local_only_vibration">Ignore "Local Only" request</string>
+    <string name="setting_ignore_local_only_description_off">Some apps can request that their notifications will stay local only and not get mirrored to the watch (for example Play Store does that for update notifications). VC will <![CDATA[<b>RESPECT</b>]]> that request and not vibrate for these notifications.</string>
+    <string name="setting_ignore_local_only_description_on">Some apps can request that their notifications will stay local only and not get mirrored to the watch (for example Play Store does that for update notifications). VC will <![CDATA[<b>IGNORE</b>]]> that request and vibrate anyway for these notifications.</string>
     <string name="setting_excluding_regex">Excluding regex</string>
     <string name="setting_excluding_regex_description">List of regular expressions (case sensitive). If notification will contain <![CDATA[<b>ANY</b>]]> of these, it will <![CDATA[<b>NOT</b>]]> vibrate.</string>
     <string name="category_content_filter">Content filter</string>

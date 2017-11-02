@@ -140,8 +140,14 @@ public class NotificationProcessor {
             return false;
         }
 
-
         SharedPreferences appPreferences = processedNotification.getAppPreferences();
+
+        if (!Preferences.getBoolean(appPreferences, PerAppSettings.IGNORE_LOCAL_ONLY) &&
+                NotificationCompat.getLocalOnly(processedNotification.getMetadataNotification().getNotification())) {
+            Timber.d("Filter fail - local only");
+            return false;
+
+        }
 
         if (Preferences.getBoolean(appPreferences, PerAppSettings.ONLY_VIBRATE_ORIGINAL_VIBRATING)) {
             Notification metadataNotification = processedNotification.getMetadataNotification().getNotification();

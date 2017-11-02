@@ -8,7 +8,6 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
-import android.support.v4.app.NotificationCompat;
 
 import com.matejdro.wearutils.preferences.definition.Preferences;
 import com.matejdro.wearvibrationcenter.mute.AppMuteManager;
@@ -45,9 +44,7 @@ public class NotificationService extends NotificationListenerService {
     private SharedPreferences globalSettings;
 
     public static boolean prefilterNotification(StatusBarNotification statusBarNotification) {
-        return statusBarNotification.isClearable()
-                &&
-                !NotificationCompat.getLocalOnly(statusBarNotification.getNotification());
+        return statusBarNotification.isClearable();
     }
 
     @Override
@@ -109,7 +106,6 @@ public class NotificationService extends NotificationListenerService {
             Timber.d("Notification filtered: app mute");
             return;
         }
-
 
         Message message = Message.obtain();
         message.what = MESSAGE_ADD_NOTIFICATION;
