@@ -4,7 +4,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'io.fabric.tools:gradle:1.24.3'
+        classpath 'io.fabric.tools:gradle:1.24.4'
     }
 }
 apply plugin: 'com.android.application'
@@ -21,9 +21,10 @@ android {
         applicationId "com.matejdro.wearvibrationcenter"
         minSdkVersion 18
         targetSdkVersion 27
-        versionCode 13
+        versionCode 14
         versionName "1.0.8"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        wearAppUnbundled true
     }
     buildTypes {
         release {
@@ -36,7 +37,6 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    wearApp project(path: ':wear', configuration: 'wear1Release')
     compile project(':common')
     compile project(':wearutils')
     compile 'com.android.support:appcompat-v7:27.0.0'
@@ -46,6 +46,10 @@ dependencies {
         transitive = true
     }
     compile 'de.psdev.licensesdialog:licensesdialog:1.8.0'
+
+    // Provided must be here to prevent build from complaining since included library also includes
+    // wearable support. Of course phone does not have wearable features.
+    provided 'com.google.android.wearable:wearable:2.1.0'
 }
 
 allprojects {
