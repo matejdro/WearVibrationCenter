@@ -75,6 +75,18 @@
                     android:scheme="wear"/>
             </intent-filter>
         </service>
+
+        <provider
+            android:authorities="com.matejdro.wearvibrationcenter.logs"
+            android:name="android.support.v4.content.FileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/log_paths" />
+
+        </provider>
+
     </application>
 
 </manifest>
