@@ -23,10 +23,10 @@ import com.matejdro.wearremotelist.parcelables.CompressedParcelableBitmap;
 import com.matejdro.wearremotelist.parcelables.StringParcelableWraper;
 import com.matejdro.wearremotelist.providerside.RemoteListProvider;
 import com.matejdro.wearremotelist.providerside.conn.PlayServicesConnectionToReceiver;
+import com.matejdro.wearutils.messages.ParcelPacker;
 import com.matejdro.wearutils.miscutils.BitmapUtils;
 import com.matejdro.wearvibrationcenter.common.AppMuteCommand;
 import com.matejdro.wearvibrationcenter.common.CommPaths;
-import com.matejdro.wearutils.messages.ParcelPacker;
 import com.matejdro.wearvibrationcenter.notification.NotificationService;
 import com.matejdro.wearvibrationcenter.notification.ProcessedNotification;
 
@@ -107,10 +107,6 @@ public class AppMuteManager implements GoogleApiClient.ConnectionCallbacks, Goog
         Set<String> addedApps = new HashSet<>();
         appList.clear();
         for (StatusBarNotification notification : service.getActiveNotifications()) {
-            if (!NotificationService.prefilterNotification(notification)) {
-                continue;
-            }
-
             String appPackage = notification.getPackageName();
             if (addedApps.contains(appPackage)) {
                 continue;

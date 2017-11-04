@@ -142,6 +142,12 @@ public class NotificationProcessor {
 
         SharedPreferences appPreferences = processedNotification.getAppPreferences();
 
+        if (!Preferences.getBoolean(appPreferences, PerAppSettings.ALLOW_PERSISTENT) &&
+                !processedNotification.getMetadataNotification().isClearable()) {
+            Timber.d("Notification filtered: persistent ");
+            return false;
+        }
+
         if (!Preferences.getBoolean(appPreferences, PerAppSettings.IGNORE_LOCAL_ONLY) &&
                 NotificationCompat.getLocalOnly(processedNotification.getMetadataNotification().getNotification())) {
             Timber.d("Filter fail - local only");

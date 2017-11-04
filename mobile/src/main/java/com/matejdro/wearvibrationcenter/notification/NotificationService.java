@@ -43,10 +43,6 @@ public class NotificationService extends NotificationListenerService {
 
     private SharedPreferences globalSettings;
 
-    public static boolean prefilterNotification(StatusBarNotification statusBarNotification) {
-        return statusBarNotification.isClearable();
-    }
-
     @Override
     public void onDestroy() {
         active = false;
@@ -85,11 +81,6 @@ public class NotificationService extends NotificationListenerService {
 
         if (timedMuteManager.isMutedCurrently()) {
             Timber.d("Notification filtered: timed mute ");
-            return;
-        }
-
-        if (!prefilterNotification(sbn)) {
-            Timber.d("Notification filtered: prefilter ");
             return;
         }
 

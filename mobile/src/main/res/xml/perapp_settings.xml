@@ -56,6 +56,13 @@
 
         <com.matejdro.wearutils.preferences.legacy.SwitchPreferenceEx
             android:defaultValue="false"
+            android:key="allow_persistent"
+            android:summaryOff="@string/setting_allow_persistent_description_off"
+            android:summaryOn="@string/setting_allow_persistent_description_on"
+            android:title="@string/setting_allow_persistent" />
+
+        <com.matejdro.wearutils.preferences.legacy.SwitchPreferenceEx
+            android:defaultValue="false"
             android:key="ignore_local_only"
             android:summaryOff="@string/setting_ignore_local_only_description_off"
             android:summaryOn="@string/setting_ignore_local_only_description_on"
