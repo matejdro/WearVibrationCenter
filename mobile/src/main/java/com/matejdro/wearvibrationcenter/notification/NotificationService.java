@@ -12,6 +12,7 @@ import android.service.notification.StatusBarNotification;
 import com.matejdro.wearutils.preferences.definition.Preferences;
 import com.matejdro.wearvibrationcenter.mute.AppMuteManager;
 import com.matejdro.wearvibrationcenter.mute.TimedMuteManager;
+import com.matejdro.wearvibrationcenter.notificationprovider.NotificationBroadcaster;
 import com.matejdro.wearvibrationcenter.preferences.GlobalSettings;
 import com.matejdro.wearvibrationcenter.preferences.PerAppSettings;
 import com.matejdro.wearvibrationcenter.preferences.PerAppSharedPreferences;
@@ -40,6 +41,7 @@ public class NotificationService extends NotificationListenerService {
     private NotificationProcessor processor;
     private TimedMuteManager timedMuteManager;
     private AppMuteManager appMuteManager;
+    private NotificationBroadcaster notificationBroadcaster;
 
     private SharedPreferences globalSettings;
 
@@ -51,6 +53,7 @@ public class NotificationService extends NotificationListenerService {
 
         timedMuteManager.onDestroy();
         appMuteManager.onDestroy();
+        notificationBroadcaster.onDestroy();
         super.onDestroy();
         Timber.d("Notification Listener stopped...");
     }
@@ -69,6 +72,7 @@ public class NotificationService extends NotificationListenerService {
         processor = new NotificationProcessor(this);
         timedMuteManager = new TimedMuteManager(this);
         appMuteManager = new AppMuteManager(this);
+        notificationBroadcaster = new NotificationBroadcaster(this);
 
         scheduleActiveListUpdate();
     }
@@ -144,6 +148,10 @@ public class NotificationService extends NotificationListenerService {
         } catch (SecurityException e) {
             Timber.w("Notification listener has been disabled before unmute.");
         }
+    }
+
+    public void onNotificationVibrated(ProcessedNotification notification) {
+        notificationBroadcaster.onNewNotification(notification);
     }
 
     private void fillMetadata(ProcessedNotification notification)

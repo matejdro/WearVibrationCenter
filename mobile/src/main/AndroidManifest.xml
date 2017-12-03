@@ -5,8 +5,12 @@
 
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <permission
+        android:name="com.matejdro.wearvibrationcenter.RECEIVE_NOTIFICATIONS"
+        android:protectionLevel="signature" />
 
     <application
         android:name=".WearVibrationCenter"
@@ -76,9 +80,14 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name=".notificationprovider.NotificationBroadcastMediator"
+            android:permission="com.matejdro.wearvibrationcenter.RECEIVE_NOTIFICATIONS"
+            android:exported="true" />
+
         <provider
-            android:authorities="com.matejdro.wearvibrationcenter.logs"
             android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.matejdro.wearvibrationcenter.logs"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

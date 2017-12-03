@@ -2,17 +2,11 @@ package com.matejdro.wearvibrationcenter.notification;
 
 import android.app.Notification;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Icon;
 import android.os.Build;
-import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
-import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.util.ArrayMap;
 
 import com.matejdro.wearutils.miscutils.BitmapUtils;
@@ -50,6 +44,8 @@ public class NotificationProcessor {
         boolean respectCharger = true;
         boolean forceScreenOn = false;
 
+        ProcessedNotification lastFilteredNotification = null;
+
         for (ProcessedNotification notification : pendingNotifications) {
             SharedPreferences appPreferences = notification.getAppPreferences();
 
@@ -71,6 +67,7 @@ public class NotificationProcessor {
             }
 
             if (vibrationType == VibrationType.ALARM) {
+                service.onNotificationVibrated(notification);
                 processAlarm(notification);
                 return;
             }
@@ -91,6 +88,8 @@ public class NotificationProcessor {
             forceScreenOn = respectCharger || Preferences.getBoolean(appPreferences, PerAppSettings.TURN_SCREEN_ON);
 
             lastVibrations.put(notification.getContentNotification().getPackageName(), System.currentTimeMillis());
+
+            lastFilteredNotification = notification;
         }
 
         pendingNotifications.clear();
@@ -98,6 +97,10 @@ public class NotificationProcessor {
         Timber.d("Vibrate: %s", Arrays.toString(longestPattern));
         if (longestPattern == null) {
             return;
+        }
+
+        if (lastFilteredNotification != null) {
+            service.onNotificationVibrated(lastFilteredNotification);
         }
 
         final VibrationCommand vibrationCommand = new VibrationCommand(longestPattern,
@@ -116,8 +119,8 @@ public class NotificationProcessor {
         boolean respectTheater = Preferences.getBoolean(appPreferences, PerAppSettings.RESPECT_THETAER_MODE);
         boolean respectCharger = Preferences.getBoolean(appPreferences, PerAppSettings.RESPECT_CHARGING);
 
-        Bitmap icon = getNotificationIcon(notification.getContentNotification());
-        Bitmap background = getNotificationBackgroundImage(notification.getContentNotification());
+        Bitmap icon = NotificationUtils.getNotificationIcon(service, notification.getContentNotification());
+        Bitmap background = NotificationUtils.getNotificationBackgroundImage(service, notification.getContentNotification());
         background = BitmapUtils.shrinkPreservingRatio(background, 400, 400);
 
         int snoozeDuration = Preferences.getInt(appPreferences, PerAppSettings.SNOOZE_DURATION);
@@ -290,70 +293,4 @@ public class NotificationProcessor {
 
     }
 
-    public
-    @Nullable
-    Bitmap getNotificationIcon(StatusBarNotification notification) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Icon icon = notification.getNotification().getSmallIcon();
-            if (icon == null) {
-                return null;
-            }
-
-            return BitmapUtils.getBitmap(service, icon);
-        } else {
-            @SuppressWarnings("deprecation")
-            int iconId = notification.getNotification().icon;
-            try {
-                Resources sourceAppResources = service.getPackageManager().getResourcesForApplication(notification.getPackageName());
-                return BitmapUtils.getBitmap(ResourcesCompat.getDrawable(sourceAppResources, iconId, null));
-            } catch (PackageManager.NameNotFoundException e) {
-                return null;
-            } catch (Resources.NotFoundException e) {
-                return null;
-            }
-        }
-    }
-
-    @SuppressWarnings("ConstantConditions")
-    public Bitmap getNotificationBackgroundImage(StatusBarNotification notification) {
-        Bundle extras = NotificationCompat.getExtras(notification.getNotification());
-        if (extras != null) {
-            //Extract image from BigPictureStyle notification style
-            Bitmap bitmap = BitmapUtils.getBitmap(service, extras.getParcelable(NotificationCompat.EXTRA_PICTURE));
-            if (bitmap != null) {
-                return bitmap;
-            }
-
-            //Extract image from Wearable extender background
-            if (extras.containsKey("android.wearable.EXTENSIONS")) {
-                Bundle wearableExtension = extras.getBundle("android.wearable.EXTENSIONS");
-                bitmap = BitmapUtils.getBitmap(service, wearableExtension.getParcelable("background"));
-                if (bitmap != null) {
-                    return bitmap;
-                }
-            }
-
-            //Extract image from Car extender large icon
-            if (extras.containsKey("android.car.EXTENSIONS")) {
-                Bundle carExtensions = extras.getBundle("android.car.EXTENSIONS");
-                bitmap = BitmapUtils.getBitmap(service, carExtensions.getParcelable("large_icon"));
-                if (bitmap != null) {
-                    return bitmap;
-                }
-            }
-
-            //Extract image from large icon on android notification
-            bitmap = BitmapUtils.getBitmap(service, extras.getParcelable(NotificationCompat.EXTRA_LARGE_ICON_BIG));
-            if (bitmap != null) {
-                return bitmap;
-            }
-
-            bitmap = BitmapUtils.getBitmap(service, extras.getParcelable(NotificationCompat.EXTRA_LARGE_ICON));
-            if (bitmap != null) {
-                return bitmap;
-            }
-        }
-
-        return null;
-    }
 }
