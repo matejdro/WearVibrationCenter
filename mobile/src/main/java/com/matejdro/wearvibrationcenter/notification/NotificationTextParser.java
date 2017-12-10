@@ -2,9 +2,13 @@ package com.matejdro.wearvibrationcenter.notification;
 
 import android.annotation.TargetApi;
 import android.app.Notification;
+import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
+import android.service.notification.StatusBarNotification;
 import android.support.v4.app.NotificationCompat;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -18,20 +22,33 @@ import java.util.Comparator;
 import java.util.List;
 
 public class NotificationTextParser {
+    private Context context;
+
 	public String title;
 	public String text;
 
-	public NotificationTextParser()
-	{
+    public NotificationTextParser(Context context) {
+        this.context = context;
+
 		this.title = null;
 		this.text = "";
     }
 
-    public void parse(ProcessedNotification target, Notification source)
+    public void parse(ProcessedNotification target, StatusBarNotification source)
     {
-        if (!tryParseNatively(source))
+        Notification notification = source.getNotification();
+        if (!tryParseNatively(notification))
         {
-            parseFromNotificationView(source);
+            parseFromNotificationView(notification);
+        }
+
+        if (title == null || title.trim().isEmpty()) {
+            PackageManager packageManager = context.getPackageManager();
+            try {
+                ApplicationInfo applicationInfo = packageManager.getApplicationInfo(source.getPackageName(), 0);
+                title = packageManager.getApplicationLabel(applicationInfo).toString();
+            } catch (PackageManager.NameNotFoundException ignored) {
+            }
         }
 
         target.setText(text);

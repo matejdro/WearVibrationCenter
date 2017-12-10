@@ -172,7 +172,7 @@ public class NotificationService extends NotificationListenerService {
             }
         }
 
-        new NotificationTextParser().parse(notification, notification.getContentNotification().getNotification());
+        new NotificationTextParser(this).parse(notification, notification.getContentNotification());
     }
 
     private void addNotificationSync(ProcessedNotification notification)
