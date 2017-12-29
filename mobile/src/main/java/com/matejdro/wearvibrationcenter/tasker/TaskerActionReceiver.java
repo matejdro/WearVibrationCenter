@@ -52,45 +52,7 @@ public class TaskerActionReceiver extends BroadcastReceiver {
     private void startAlarm(final Context context, final Bundle data) {
         final PendingResult result = goAsync();
 
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... voids) {
-                SharedPreferences alarmProperties = new BundleSharedPreferences(null, data);
-
-                String text = Preferences.getString(alarmProperties, StartAlarmPreferenceActivity.ALARM_PROPERTY_DISPLAYED_TEXT);
-                Uri backgroundImageUri = Preferences.getUri(alarmProperties, StartAlarmPreferenceActivity.ALARM_PROPERTY_BACKGROUND_IMAGE);
-                Uri iconUri = Preferences.getUri(alarmProperties, StartAlarmPreferenceActivity.ALARM_PROPERTY_ICON_IMAGE);
-                long[] vibrationPattern = Preferences.getLongArray(alarmProperties, StartAlarmPreferenceActivity.ALARM_PROPERTY_VIBRATION_PATTERN);
-                int snoozeDuration = Preferences.getInt(alarmProperties, StartAlarmPreferenceActivity.ALARM_PROPERTY_SNOOZE_DURATION);
-                boolean respectTheaterMode = Preferences.getBoolean(alarmProperties, StartAlarmPreferenceActivity.ALARM_PROPERTY_RESPECT_THETAER_MODE);
-                boolean respectCharging = Preferences.getBoolean(alarmProperties, StartAlarmPreferenceActivity.ALARM_PROPERTY_RESPECT_CHARGING);
-
-                Bitmap iconImage = null;
-                Bitmap backgroundImage = null;
-
-                try {
-                    iconImage = BitmapUtils.getBitmap(BitmapUtils.getDrawableFromUri(context, iconUri));
-                    iconImage = BitmapUtils.shrinkPreservingRatio(iconImage, 64, 64);
-
-                    backgroundImage = BitmapUtils.getBitmap(BitmapUtils.getDrawableFromUri(context, backgroundImageUri));
-                    backgroundImage = BitmapUtils.shrinkPreservingRatio(backgroundImage, 400, 400);
-                } catch (SecurityException e) {
-                    Toast.makeText(context, com.matejdro.wearutils.R.string.no_storage_permission, Toast.LENGTH_SHORT).show();
-                }
-
-                AlarmCommand alarmCommand = new AlarmCommand(text,
-                        vibrationPattern,
-                        BitmapUtils.serialize(backgroundImage),
-                        BitmapUtils.serialize(iconImage),
-                        snoozeDuration,
-                        respectTheaterMode,
-                        respectCharging);
-
-                WatchCommander.sendAlarmCommand(context, alarmCommand);
-                result.finish();
-                return null;
-            }
-        }.execute((Void) null);
+        new AlarmTask(context, data, result).execute((Void) null);
     }
 
     private void changeGlobalSettings(Context context, Bundle data) {
@@ -115,5 +77,61 @@ public class TaskerActionReceiver extends BroadcastReceiver {
         editor.apply();
     }
 
+    private static class AlarmTask extends AsyncTask<Void, Void, Void> {
+        private int resultError = 0;
+        @SuppressLint("StaticFieldLeak")
+        private Context context;
+        private Bundle data;
+        private PendingResult result;
 
+        public AlarmTask(Context context, Bundle data, PendingResult result) {
+            this.context = context;
+            this.data = data;
+            this.result = result;
+        }
+
+        protected Void doInBackground(Void... voids) {
+            SharedPreferences alarmProperties = new BundleSharedPreferences(null, data);
+
+            String text = Preferences.getString(alarmProperties, StartAlarmPreferenceActivity.ALARM_PROPERTY_DISPLAYED_TEXT);
+            Uri backgroundImageUri = Preferences.getUri(alarmProperties, StartAlarmPreferenceActivity.ALARM_PROPERTY_BACKGROUND_IMAGE);
+            Uri iconUri = Preferences.getUri(alarmProperties, StartAlarmPreferenceActivity.ALARM_PROPERTY_ICON_IMAGE);
+            long[] vibrationPattern = Preferences.getLongArray(alarmProperties, StartAlarmPreferenceActivity.ALARM_PROPERTY_VIBRATION_PATTERN);
+            int snoozeDuration = Preferences.getInt(alarmProperties, StartAlarmPreferenceActivity.ALARM_PROPERTY_SNOOZE_DURATION);
+            boolean respectTheaterMode = Preferences.getBoolean(alarmProperties, StartAlarmPreferenceActivity.ALARM_PROPERTY_RESPECT_THETAER_MODE);
+            boolean respectCharging = Preferences.getBoolean(alarmProperties, StartAlarmPreferenceActivity.ALARM_PROPERTY_RESPECT_CHARGING);
+
+            Bitmap iconImage = null;
+            Bitmap backgroundImage = null;
+
+            try {
+                iconImage = BitmapUtils.getBitmap(BitmapUtils.getDrawableFromUri(context, iconUri));
+                iconImage = BitmapUtils.shrinkPreservingRatio(iconImage, 64, 64);
+
+                backgroundImage = BitmapUtils.getBitmap(BitmapUtils.getDrawableFromUri(context, backgroundImageUri));
+                backgroundImage = BitmapUtils.shrinkPreservingRatio(backgroundImage, 400, 400);
+            } catch (SecurityException e) {
+                resultError = com.matejdro.wearutils.R.string.no_storage_permission;
+            }
+
+            AlarmCommand alarmCommand = new AlarmCommand(text,
+                    vibrationPattern,
+                    BitmapUtils.serialize(backgroundImage),
+                    BitmapUtils.serialize(iconImage),
+                    snoozeDuration,
+                    respectTheaterMode,
+                    respectCharging);
+
+            WatchCommander.sendAlarmCommand(context, alarmCommand);
+            result.finish();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            if (resultError != 0) {
+                Toast.makeText(context, resultError, Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 }
