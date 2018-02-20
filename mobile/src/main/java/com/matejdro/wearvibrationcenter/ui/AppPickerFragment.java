@@ -6,13 +6,11 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -85,7 +83,7 @@ public class AppPickerFragment extends Fragment implements TitleUtils.TitledFrag
 
         loadingView = view.findViewById(R.id.loadingBar);
 
-        recycler = (RecyclerView) view.findViewById(R.id.recycler);
+        recycler = view.findViewById(R.id.recycler);
         recycler.setAdapter(adapter);
         recycler.setLayoutManager(new LinearLayoutManager(getActivity()));
         recycler.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL));
@@ -111,8 +109,8 @@ public class AppPickerFragment extends Fragment implements TitleUtils.TitledFrag
             ViewGroup view = (ViewGroup) LayoutInflater.from(getActivity()).inflate(R.layout.fragment_app_list_item, parent, false);
             final ViewHolder holder = new ViewHolder(view);
 
-            holder.icon = (ImageView) view.findViewById(R.id.appImage);
-            holder.name = (TextView) view.findViewById(R.id.appName);
+            holder.icon = view.findViewById(R.id.appImage);
+            holder.name = view.findViewById(R.id.appName);
 
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -213,9 +211,6 @@ public class AppPickerFragment extends Fragment implements TitleUtils.TitledFrag
 
             try {
                 Drawable icon = pm.getApplicationIcon((String) params[0]);
-                if (!(icon instanceof BitmapDrawable)) {
-                    icon = ResourcesCompat.getDrawable(getResources(), android.R.drawable.sym_def_app_icon, null);
-                }
 
                 Bitmap iconBitmap = BitmapUtils.getBitmap(icon);
                 if (iconBitmap != null) {
