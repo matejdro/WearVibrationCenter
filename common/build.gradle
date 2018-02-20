@@ -22,7 +22,6 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.matejdro:wear-remote-list:1.0'
-    compile project(':wearutils')
+    api 'com.matejdro:wear-remote-list:1.0'
+    implementation project(':wearutils')
 }
