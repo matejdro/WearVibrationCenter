@@ -85,7 +85,7 @@ public class NotificationProcessor {
 
             respectTheater = respectTheater && Preferences.getBoolean(appPreferences, PerAppSettings.RESPECT_THETAER_MODE);
             respectCharger = respectCharger && Preferences.getBoolean(appPreferences, PerAppSettings.RESPECT_CHARGING);
-            forceScreenOn = respectCharger || Preferences.getBoolean(appPreferences, PerAppSettings.TURN_SCREEN_ON);
+            forceScreenOn = forceScreenOn || Preferences.getBoolean(appPreferences, PerAppSettings.TURN_SCREEN_ON);
 
             lastVibrations.put(notification.getContentNotification().getPackageName(), System.currentTimeMillis());
 
