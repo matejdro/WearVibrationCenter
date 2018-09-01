@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.wearable.activity.ConfirmationActivity;
 import android.support.wearable.activity.WearableActivity;
 import android.view.MotionEvent;
@@ -28,6 +29,7 @@ import timber.log.Timber;
 
 public class AlarmActivity extends WearableActivity implements View.OnTouchListener {
     public static final String EXTRA_ALARM_COMMAND_BYTES = "AlarmCommandBytes";
+    public static final String EXTRA_ALARM_TEXT = "Text";
 
     private int displayWidth;
 
@@ -67,12 +69,17 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
 
         byte[] alarmCommandData = getIntent().getByteArrayExtra(EXTRA_ALARM_COMMAND_BYTES);
         if (alarmCommandData == null) {
-            Timber.e("No alarm intent!");
-            finish();
-            return;
+            String alarmText = getIntent().getStringExtra(EXTRA_ALARM_TEXT);
+            if (alarmText != null) {
+                alarmCommand = createTextAlarmCommand(alarmText);
+            } else {
+                Timber.e("No alarm intent!");
+                finish();
+                return;
+            }
+        } else {
+            alarmCommand = ParcelPacker.getParcelable(alarmCommandData, AlarmCommand.CREATOR);
         }
-
-        alarmCommand = ParcelPacker.getParcelable(alarmCommandData, AlarmCommand.CREATOR);
 
         setContentView(R.layout.activity_alarm);
 
@@ -97,6 +104,11 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
         });
         loadAlarmData();
         setupSelfDismiss();
+    }
+
+    @NonNull
+    private AlarmCommand createTextAlarmCommand(String alarmText) {
+        return new AlarmCommand(alarmText, new long[]{0, 250, 250, 250, 250}, null, null, 600, false, false);
     }
 
     private void initAnimationParameters() {
@@ -222,8 +234,7 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
         finish();
     }
 
-    private void onAmbientStateChanged(boolean inAmbientNow)
-    {
+    private void onAmbientStateChanged(boolean inAmbientNow) {
         if (rootLayout == null) {
             // This method seem to sometimes call before onCreate. Ignore it.
             return;

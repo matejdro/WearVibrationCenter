@@ -30,7 +30,12 @@
         <activity
             android:name=".AlarmActivity"
             android:launchMode="singleTop"
-            android:theme="@style/AlarmTheme"/>
+            android:theme="@style/AlarmTheme">
+            <intent-filter>
+                <action android:name="com.matejdro.wearvibrationcenter.START_ALARM" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
         <activity
             android:name=".mutepicker.MuteModeActivity"
