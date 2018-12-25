@@ -49,6 +49,8 @@ dependencies {
     // This must be here to prevent build from complaining since included library also includes
     // wearable support. Of course phone does not have wearable features.
     compileOnly 'com.google.android.wearable:wearable:2.2.0'
+
+    implementation 'com.google.android.gms:play-services-wearable:11.8.0'
 }
 
 allprojects {
