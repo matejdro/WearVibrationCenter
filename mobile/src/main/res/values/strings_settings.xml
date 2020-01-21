@@ -66,7 +66,7 @@
     <string name="category_content_filter">Content filter</string>
     <string name="category_general_filter">General filter</string>
     <string name="setting_including_regex">Including regex</string>
-    <string name="setting_including_regex_description">List of regular expressions (case sensitive). Notification <![CDATA[<b>MUST</b>]]> contain <![CDATA[<b>ALL</b>]]> of these in order to vibrate.</string>
+    <string name="setting_including_regex_description">List of regular expressions (case sensitive). Notification <![CDATA[<b>MUST</b>]]> contain <![CDATA[<b>ANY</b>]]> of these in order to vibrate.</string>
     <string name="setting_alarm_regex">Alarm trigger regex</string>
     <string name="setting_alarm_regex_description">List of regular expressions (case sensitive). If notification will contain <![CDATA[<b>ANY</b>]]> of these, notification will vibrate in alarm mode even if default mode is set to single vibration.</string>
 
