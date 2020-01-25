@@ -250,6 +250,10 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
+        if (isAmbient()) {
+            return false;
+        }
+
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 moveStartX = (int) event.getRawX();
