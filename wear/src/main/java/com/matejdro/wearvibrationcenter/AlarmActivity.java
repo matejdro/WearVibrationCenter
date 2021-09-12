@@ -261,6 +261,11 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
         // Re-start vibration after a short delay.
         mainThreadHandler.removeCallbacks(vibrationRestartRunnable);
         mainThreadHandler.postDelayed(vibrationRestartRunnable, 500);
+
+        if (!isAmbient()) {
+            lastMoveX = 0;
+            moveStartX = 0;
+        }
     }
 
     @Override
@@ -281,12 +286,17 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_OUTSIDE:
-                setShiftPosition(0);
-                if (lastMoveX < -displayWidth / 2) {
-                    snoozeAlarm();
-                } else if (lastMoveX > displayWidth / 2) {
-                    dismissAlarm();
+                if (lastMoveX != 0 && moveStartX != 0) {
+                    setShiftPosition(0);
+                    if (lastMoveX < -displayWidth / 2) {
+                        snoozeAlarm();
+                    } else if (lastMoveX > displayWidth / 2) {
+                        dismissAlarm();
+                    }
                 }
+
+                lastMoveX = 0;
+                moveStartX = 0;
                 break;
         }
         return true;
