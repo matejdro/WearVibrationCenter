@@ -49,6 +49,8 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
     private int moveStartX = 0;
     private int lastMoveX = 0;
 
+    private boolean resumed = false;
+
     private AlarmCommand alarmCommand;
 
     private Vibrator vibrator;
@@ -170,6 +172,11 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
     }
 
     private void restartVibrator() {
+        if (!resumed) {
+            vibrator.cancel();
+            return;
+        }
+
         int vibrationTimeSum = 0;
         for (long vibElem : alarmCommand.getVibrationPattern()) {
             vibrationTimeSum += vibElem;
@@ -184,8 +191,16 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
     @Override
     protected void onResume() {
         restartVibrator();
+        onAmbientStateChanged(isAmbient());
+        resumed = true;
 
         super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        resumed = false;
     }
 
     @Override
