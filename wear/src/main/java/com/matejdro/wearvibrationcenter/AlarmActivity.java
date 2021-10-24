@@ -222,6 +222,14 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
     @Override
     public void onExitAmbient() {
         super.onExitAmbient();
+
+        rootLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                initAnimationParameters();
+            }
+        });
+
         onAmbientStateChanged(false);
     }
 
