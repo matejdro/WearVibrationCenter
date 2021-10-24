@@ -19,3 +19,5 @@
 # Do not obfuscate the code
 -dontobfuscate
 -optimizations !code/simplification/arithmetic,!field/*,!class/merging/*,!code/allocation/variable
+
+-dontwarn com.matejdro.wearutils.**
