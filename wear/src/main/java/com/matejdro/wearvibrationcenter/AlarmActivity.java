@@ -50,6 +50,7 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
     private int lastMoveX = 0;
 
     private boolean resumed = false;
+    private boolean dismissed = false;
 
     private AlarmCommand alarmCommand;
 
@@ -204,6 +205,22 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+
+        if (!dismissed) {
+            // Screen has turned off or some other app gained focus. Alarm must continue, let's try to restart ourselves.
+
+            Intent restartIntent = new Intent(this, AlarmActivity.class);
+            restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            restartIntent.putExtra(AlarmActivity.EXTRA_ALARM_COMMAND_BYTES, ParcelPacker.getData(alarmCommand));
+
+            finish();
+            startActivity(restartIntent);
+        }
+    }
+
+    @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
 
@@ -234,20 +251,20 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
     }
 
     private void dismissAlarm() {
+        dismissed = true;
         finish();
     }
 
     private void snoozeAlarm() {
-        Intent intent = new Intent(this, ConfirmationActivity.class);
-        intent.putExtra(ConfirmationActivity.EXTRA_ANIMATION_TYPE,
-                ConfirmationActivity.SUCCESS_ANIMATION);
-        intent.putExtra(ConfirmationActivity.EXTRA_MESSAGE,
-                getString(R.string.alarm_snoozed));
-        startActivity(intent);
+            Intent intent = new Intent(this, ConfirmationActivity.class);
+            intent.putExtra(ConfirmationActivity.EXTRA_ANIMATION_TYPE, ConfirmationActivity.SUCCESS_ANIMATION);
+            intent.putExtra(ConfirmationActivity.EXTRA_MESSAGE, getString(R.string.alarm_snoozed));
+            startActivity(intent);
 
         Intent alarmActivityIntent = new Intent(this, AlarmActivity.class);
         alarmActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         alarmActivityIntent.putExtra(AlarmActivity.EXTRA_ALARM_COMMAND_BYTES, ParcelPacker.getData(alarmCommand));
+
         startActivity(alarmActivityIntent);
 
         PendingIntent alarmPendingIntent = PendingIntent.getActivity(this, 0, alarmActivityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
