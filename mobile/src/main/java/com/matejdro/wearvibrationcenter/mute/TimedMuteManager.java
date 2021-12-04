@@ -1,6 +1,7 @@
 package com.matejdro.wearvibrationcenter.mute;
 
 import android.annotation.TargetApi;
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -40,11 +41,12 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
     private final GoogleApiClient googleApiClient;
     private final BroadcastReceiver unmuteReceiver;
     private final NotificationService service;
-
-    private final Handler handler = new Handler();
+    private final AlarmManager alarmManager;
 
     private boolean mutedCurrently = false;
     private int previousZenMode = 0;
+
+    private final PendingIntent unmutePendingIntent;
 
     public TimedMuteManager(NotificationService service) {
         this.service = service;
@@ -58,6 +60,10 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
 
         unmuteReceiver = new UnmuteReceiver();
         service.registerReceiver(unmuteReceiver, new IntentFilter(ACTON_UNMUTE));
+
+        alarmManager = (AlarmManager) service.getSystemService(Context.ALARM_SERVICE);
+
+        unmutePendingIntent = PendingIntent.getBroadcast(service, 0, new Intent(ACTON_UNMUTE), PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     public void onDestroy() {
@@ -69,7 +75,7 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
         }
 
         service.unregisterReceiver(unmuteReceiver);
-        handler.removeCallbacksAndMessages(null);
+        alarmManager.cancel(unmutePendingIntent);
     }
 
     public boolean isMutedCurrently() {
@@ -83,7 +89,6 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
             mutedUntil = System.currentTimeMillis() + timedMuteCommand.getMuteDurationMinutes() * 1000 * 60;
         }
 
-        PendingIntent unmutePendingIntent = PendingIntent.getBroadcast(service, 0, new Intent(ACTON_UNMUTE), PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(service, VibrationCenterChannels.CHANNEL_TEMPORARY_MUTE)
                 .setSmallIcon(R.drawable.ic_notification)
@@ -96,6 +101,7 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
         wearableExtender.addAction(new NotificationCompat.Action(R.drawable.ic_dismiss_mute, service.getString(R.string.cancel_mute), unmutePendingIntent));
         builder.extend(wearableExtender);
 
+        System.out.println("Muted until " + mutedUntil);
         if (mutedUntil > 0) {
             builder
                     .setWhen(mutedUntil)
@@ -104,12 +110,8 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
             // NotificationCompat is missing setChronometerCountDown(), lets do it manually.
             builder.getExtras().putBoolean("android.chronometerCountDown", true);
 
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    unmute();
-                }
-            }, mutedUntil - System.currentTimeMillis());
+            System.out.println("Set receiver");
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, mutedUntil, unmutePendingIntent);
         }
 
         NotificationManagerCompat.from(service).notify(NOTIFICATION_ID_MUTE_DURATION, builder.build());
@@ -149,13 +151,14 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
     }
 
     private void unmute() {
+        System.out.println("Unmute! " + mutedCurrently);
         if (!mutedCurrently) {
             return;
         }
 
         mutedCurrently = false;
         NotificationManagerCompat.from(service).cancel(NOTIFICATION_ID_MUTE_DURATION);
-        handler.removeCallbacksAndMessages(null);
+        alarmManager.cancel(unmutePendingIntent);
 
         if (previousZenMode != 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             service.requestInterruptionFilterSafe(previousZenMode);
