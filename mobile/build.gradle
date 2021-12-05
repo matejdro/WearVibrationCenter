@@ -16,7 +16,7 @@ repositories {
 
 //noinspection GroovyMissingReturnStatement
 android {
-    compileSdkVersion 28
+    compileSdkVersion 31
     defaultConfig {
         applicationId "com.matejdro.wearvibrationcenter"
         minSdkVersion 23
@@ -41,21 +41,21 @@ android {
 dependencies {
     implementation project(':common')
     implementation project(':wearutils')
-    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.4.0'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'com.google.android.material:material:1.4.0'
     implementation 'androidx.percentlayout:percentlayout:1.0.0'
-    implementation 'com.google.android.support:wearable:2.2.0'
+    implementation 'com.google.android.support:wearable:2.8.1'
     implementation('com.crashlytics.sdk.android:crashlytics:2.6.5@aar') {
         transitive = true
     }
-    implementation 'de.psdev.licensesdialog:licensesdialog:1.8.0'
+    implementation 'de.psdev.licensesdialog:licensesdialog:2.2.0'
 
     // This must be here to prevent build from complaining since included library also includes
     // wearable support. Of course phone does not have wearable features.
-    compileOnly 'com.google.android.wearable:wearable:2.2.0'
+    compileOnly 'com.google.android.wearable:wearable:2.8.1'
 
-    implementation 'com.google.android.gms:play-services-wearable:11.8.0'
+    implementation 'com.google.android.gms:play-services-wearable:17.1.0'
 }
 
 allprojects {
