@@ -6,8 +6,8 @@ import android.graphics.Bitmap;
 import android.os.Build;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.util.ArrayMap;
+import androidx.core.app.NotificationCompat;
+import androidx.collection.ArrayMap;
 
 import com.matejdro.wearutils.miscutils.BitmapUtils;
 import com.matejdro.wearutils.miscutils.DeviceUtils;

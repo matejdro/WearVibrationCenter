@@ -6,8 +6,8 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.matejdro.wearutils.tasker.TaskerPreferenceActivity;
 import com.matejdro.wearvibrationcenter.R;

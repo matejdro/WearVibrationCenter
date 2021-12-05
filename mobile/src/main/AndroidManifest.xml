@@ -87,7 +87,7 @@
             android:exported="true" />
 
         <provider
-            android:name="android.support.v4.content.FileProvider"
+            android:name="androidx.core.content.FileProvider"
             android:authorities="com.matejdro.wearvibrationcenter.logs"
             android:exported="false"
             android:grantUriPermissions="true">

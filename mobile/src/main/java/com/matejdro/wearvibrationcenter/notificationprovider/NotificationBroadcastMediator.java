@@ -7,7 +7,7 @@ import android.os.Binder;
 import android.os.DeadObjectException;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.matejdro.wearutils.miscutils.BitmapUtils;
 import com.matejdro.wearvibrationcenter.notification.NotificationUtils;
