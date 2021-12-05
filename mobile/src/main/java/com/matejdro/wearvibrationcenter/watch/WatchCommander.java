@@ -101,7 +101,7 @@ public class WatchCommander extends IntentService {
 
     private void transmitGlobalSettings() {
         SharedPreferences globalSettings = PreferenceManager.getDefaultSharedPreferences(this);
-        PreferencePusher.pushPreferences(googleApiClient, globalSettings, CommPaths.PREFERENCES_PREFIX, false).await();
+        PreferencePusher.INSTANCE.pushPreferences(googleApiClient, globalSettings, CommPaths.PREFERENCES_PREFIX, false).await();
     }
 
     private boolean ensurePlayServicesConnection() {

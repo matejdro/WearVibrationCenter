@@ -77,7 +77,7 @@ public class GlobalSettingsFragment extends CustomStoragePreferenceFragment impl
         super.onStop();
 
         if (canTransmitSettingsAutomatically() && googleApiClient != null && googleApiClient.isConnected()) {
-            PreferencePusher.pushPreferences(googleApiClient, getPreferenceManager().getSharedPreferences(), CommPaths.PREFERENCES_PREFIX, false);
+            PreferencePusher.INSTANCE.pushPreferences(googleApiClient, getPreferenceManager().getSharedPreferences(), CommPaths.PREFERENCES_PREFIX, false);
         }
     }
 

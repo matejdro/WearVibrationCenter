@@ -1,1 +1,11 @@
 include ':mobile', ':wear', ':common', ':wearutils'
+
+enableFeaturePreview("VERSION_CATALOGS")
+
+dependencyResolutionManagement {
+    versionCatalogs {
+        wearUtilsLibs {
+            from(files("wearutils/libs.toml"))
+        }
+    }
+}
