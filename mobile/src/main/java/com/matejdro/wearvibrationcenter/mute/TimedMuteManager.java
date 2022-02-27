@@ -62,7 +62,7 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
 
         alarmManager = (AlarmManager) service.getSystemService(Context.ALARM_SERVICE);
 
-        unmutePendingIntent = PendingIntent.getBroadcast(service, 0, new Intent(ACTON_UNMUTE), PendingIntent.FLAG_UPDATE_CURRENT);
+        unmutePendingIntent = PendingIntent.getBroadcast(service, 0, new Intent(ACTON_UNMUTE), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
     public void onDestroy() {

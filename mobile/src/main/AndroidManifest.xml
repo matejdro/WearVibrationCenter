@@ -24,7 +24,8 @@
         tools:ignore="AllowBackup,GoogleAppIndexingWarning">
         <activity
             android:name=".ui.MainActivity"
-            android:theme="@style/AppThemeNoActionBar">
+            android:theme="@style/AppThemeNoActionBar"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -52,7 +53,8 @@
             android:name=".tasker.TaskerAppSettingsActivity" />
 
         <receiver android:name=".tasker.TaskerActionReceiver"
-            tools:ignore="ExportedReceiver">
+            tools:ignore="ExportedReceiver"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.twofortyfouram.locale.intent.action.FIRE_SETTING" />
             </intent-filter>
@@ -61,7 +63,8 @@
         <service
             android:name=".notification.NotificationService"
             android:label="@string/app_name"
-            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
@@ -71,7 +74,8 @@
 
         <service
             android:name="pl.tajchert.exceptionwear.ExceptionDataListenerService"
-            tools:ignore="ExportedService">
+            tools:ignore="ExportedService"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
                 <data

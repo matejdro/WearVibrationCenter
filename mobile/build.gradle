@@ -20,7 +20,7 @@ android {
     defaultConfig {
         applicationId "com.matejdro.wearvibrationcenter"
         minSdkVersion 23
-        targetSdkVersion 28
+        targetSdkVersion 31
         versionCode 18
         versionName "1.2.2"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'

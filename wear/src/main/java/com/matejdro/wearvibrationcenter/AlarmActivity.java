@@ -265,7 +265,7 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
         alarmActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         alarmActivityIntent.putExtra(AlarmActivity.EXTRA_ALARM_COMMAND_BYTES, ParcelPacker.getData(alarmCommand));
 
-        PendingIntent alarmPendingIntent = PendingIntent.getActivity(this, 0, alarmActivityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent alarmPendingIntent = PendingIntent.getActivity(this, 0, alarmActivityIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + alarmCommand.getSnoozeDuration(), alarmPendingIntent);
 
