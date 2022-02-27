@@ -45,4 +45,6 @@
     <string name="required_permission">Required permission</string>
     <string name="logs_storage_permission_explanation">To save logs, Vibration Center needs storage permission first.</string>
     <string name="temporary_mute_channel_name">Temporary mute notifications</string>
+    <string name="tip_timed_mute">Timed mute permission</string>
+    <string name="tip_timed_mute_description">For best performance with the timed mute function, you need to grant us reminders permission</string>
 </resources>

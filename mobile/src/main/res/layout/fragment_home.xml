@@ -12,6 +12,10 @@
         android:padding="15dp">
 
         <include
+            android:id="@+id/tip_exact_alarms"
+            layout="@layout/tip_exact_alarms"/>
+
+        <include
             android:id="@+id/tip_per_app"
             layout="@layout/tip_per_app"/>
 

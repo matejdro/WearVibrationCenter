@@ -1,5 +1,6 @@
 package com.matejdro.wearvibrationcenter.mute;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -8,14 +9,17 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -23,38 +27,36 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Wearable;
-import com.matejdro.wearvibrationcenter.common.CommPaths;
-import com.matejdro.wearvibrationcenter.common.TimedMuteCommand;
 import com.matejdro.wearutils.messages.ParcelPacker;
 import com.matejdro.wearutils.preferences.definition.Preferences;
 import com.matejdro.wearvibrationcenter.R;
+import com.matejdro.wearvibrationcenter.common.CommPaths;
+import com.matejdro.wearvibrationcenter.common.TimedMuteCommand;
 import com.matejdro.wearvibrationcenter.notification.NotificationService;
 import com.matejdro.wearvibrationcenter.notification.VibrationCenterChannels;
-import com.matejdro.wearvibrationcenter.preferences.ZenModeChange;
 import com.matejdro.wearvibrationcenter.preferences.GlobalSettings;
+import com.matejdro.wearvibrationcenter.preferences.ZenModeChange;
+
 
 public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, MessageApi.MessageListener {
-    private static final int NOTIFICATION_ID_MUTE_DURATION = 0;
-    private static final String ACTON_UNMUTE = "com.matejdro.wearvibrationcenter.action.UNMUTE";
 
-    private final GoogleApiClient googleApiClient;
-    private final BroadcastReceiver unmuteReceiver;
+    private static final int    NOTIFICATION_ID_MUTE_DURATION = 0;
+    private static final String ACTON_UNMUTE                  = "com.matejdro.wearvibrationcenter.action.UNMUTE";
+
+    private final GoogleApiClient     googleApiClient;
+    private final BroadcastReceiver   unmuteReceiver;
     private final NotificationService service;
-    private final AlarmManager alarmManager;
+    private final AlarmManager        alarmManager;
 
-    private boolean mutedCurrently = false;
-    private int previousZenMode = 0;
+    private boolean mutedCurrently  = false;
+    private int     previousZenMode = 0;
 
     private final PendingIntent unmutePendingIntent;
 
     public TimedMuteManager(NotificationService service) {
         this.service = service;
 
-        googleApiClient = new GoogleApiClient.Builder(service)
-                .addApi(Wearable.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
+        googleApiClient = new GoogleApiClient.Builder(service).addApi(Wearable.API).addConnectionCallbacks(this).addOnConnectionFailedListener(this).build();
         googleApiClient.connect();
 
         unmuteReceiver = new UnmuteReceiver();
@@ -88,29 +90,28 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
             mutedUntil = System.currentTimeMillis() + timedMuteCommand.getMuteDurationMinutes() * 1000 * 60;
         }
 
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(service, VibrationCenterChannels.CHANNEL_TEMPORARY_MUTE)
-                .setSmallIcon(R.drawable.ic_notification)
-                .setPriority(Notification.PRIORITY_MIN)
-                .setDeleteIntent(unmutePendingIntent)
-                .setContentTitle(service.getString(R.string.vibrations_muted_notification_title))
-                .setContentText(service.getString(R.string.vibrations_muted_notification_explanation));
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(service,
+                                                                            VibrationCenterChannels.CHANNEL_TEMPORARY_MUTE).setSmallIcon(R.drawable.ic_notification)
+                                                                                                                           .setPriority(Notification.PRIORITY_MIN)
+                                                                                                                           .setDeleteIntent(unmutePendingIntent)
+                                                                                                                           .setContentTitle(service.getString(R.string.vibrations_muted_notification_title))
+                                                                                                                           .setContentText(service.getString(R.string.vibrations_muted_notification_explanation));
 
         NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender();
         wearableExtender.addAction(new NotificationCompat.Action(R.drawable.ic_dismiss_mute, service.getString(R.string.cancel_mute), unmutePendingIntent));
         builder.extend(wearableExtender);
 
-        System.out.println("Muted until " + mutedUntil);
         if (mutedUntil > 0) {
-            builder
-                    .setWhen(mutedUntil)
-                    .setUsesChronometer(true);
+            builder.setWhen(mutedUntil).setUsesChronometer(true);
 
             // NotificationCompat is missing setChronometerCountDown(), lets do it manually.
             builder.getExtras().putBoolean("android.chronometerCountDown", true);
 
-            System.out.println("Set receiver");
-            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, mutedUntil, unmutePendingIntent);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && alarmManager.canScheduleExactAlarms()) {
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, mutedUntil, unmutePendingIntent);
+            } else {
+                alarmManager.set(AlarmManager.RTC_WAKEUP, mutedUntil, unmutePendingIntent);
+            }
         }
 
         NotificationManagerCompat.from(service).notify(NOTIFICATION_ID_MUTE_DURATION, builder.build());
@@ -192,6 +193,7 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
     }
 
     private class UnmuteReceiver extends BroadcastReceiver {
+
         @Override
         public void onReceive(Context context, Intent intent) {
             unmute();
