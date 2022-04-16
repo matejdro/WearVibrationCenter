@@ -1,0 +1,34 @@
+[versions]
+android-gradle = "7.0.3"
+androidx-appCompat = "1.4.0"
+androidx-cardView = "1.0.0"
+androidx-legacySupport = "1.0.0"
+androidx-percentLayout = "1.0.0"
+androidx-recyclerView = "1.2.1"
+crashlytics = "2.6.5@aar"
+fabricGradle = "1.31.2"
+kotlin = "1.5.32"
+google-material = "1.4.0"
+google-wearableLibrary = "2.8.1"
+google-playServices-wearable = "17.1.0"
+licensesDialog = "2.2.0"
+versionsGradle = "0.39.0"
+wearRemoteList = "1.0"
+
+[libraries]
+android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android.gradle" }
+androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appCompat" }
+androidx-cardView = { module = "androidx.cardview:cardview", version.ref = "androidx-cardView" }
+androidx-legacySupport = { module = "androidx.legacy:legacy-support-v4", version.ref = "androidx-legacySupport" }
+androidx-percentLayout = { module = "androidx.percentlayout:percentlayout", version.ref = "androidx-percentLayout" }
+androidx-recyclerView = { module = "androidx.recyclerview:recyclerview", version.ref = "androidx-recyclerView" }
+google-material = { module = "com.google.android.material:material", version.ref = "google-material" }
+google-wearableSupport = { module = "com.google.android.support:wearable", version.ref = "google.wearableLibrary" }
+google-wearableLibrary = { module = "com.google.android.wearable:wearable", version.ref = "google-wearableLibrary" }
+google-playServices-wearable = { module = "com.google.android.gms:play-services-wearable", version.ref = "google.playServices.wearable" }
+crashlytics = { module = "com.crashlytics.sdk.android:crashlytics", version.ref = "crashlytics" }
+fabricGradle = { module = "io.fabric.tools:gradle", version.ref = "fabricGradle" }
+kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+licensesDialog = { module = "de.psdev.licensesdialog:licensesdialog", version.ref = "licensesDialog" }
+versionsGradle = { module = "com.github.ben-manes:gradle-versions-plugin", version.ref = "versionsGradle" }
+wearRemoteList = { module = "com.matejdro:wear-remote-list", version.ref = "wearRemoteList" }

@@ -23,13 +23,13 @@ android {
 dependencies {
     implementation project(':common')
     implementation project(':wearutils')
-    implementation 'com.google.android.support:wearable:2.8.1'
-    compileOnly 'com.google.android.wearable:wearable:2.8.1'
-    implementation 'androidx.percentlayout:percentlayout:1.0.0'
-    implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation libs.google.wearableSupport
+    compileOnly libs.google.wearableLibrary
+    implementation libs.androidx.percentLayout
+    implementation libs.androidx.recyclerView
+    implementation libs.androidx.legacySupport
 
-    implementation 'com.google.android.gms:play-services-wearable:17.1.0'
+    implementation libs.google.playServices.wearable
 }
 
 allprojects {
