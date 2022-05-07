@@ -3,8 +3,11 @@ Vibration Center for Wear
 
 Android (Wear) application for managing notification vibrations.
 
-Play store entry: https://play.google.com/store/apps/details?id=com.matejdro.wearvibrationcenter    
-Discussion forums: https://plus.google.com/communities/107578448791725969947
+## Installing
+
+App is not on the Play Store anymore, due to Google's constant annoying policies and takedowns without a way to get a good explanation.
+
+You can install the app by manually sideloading the apk from releases to your phone and to your watch. To make watch install easier, you can use [Wear Installer](https://www.xda-developers.com/wear-installer-sideload-wear-os-apps/).
 
 ## Building
 
