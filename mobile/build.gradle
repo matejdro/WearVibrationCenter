@@ -44,9 +44,7 @@ dependencies {
     implementation libs.androidx.appCompat
     implementation libs.androidx.cardView
     implementation libs.androidx.percentLayout
-    implementation(libs.crashlytics) {
-        transitive = true
-    }
+    implementation libs.androidx.preference
     implementation libs.google.material
     implementation libs.google.wearableLibrary
     implementation libs.licensesDialog

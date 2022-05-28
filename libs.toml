@@ -5,6 +5,7 @@ androidx-cardView = "1.0.0"
 androidx-legacySupport = "1.0.0"
 androidx-percentLayout = "1.0.0"
 androidx-recyclerView = "1.2.1"
+androidx-preference = "1.2.0"
 crashlytics = "2.6.5@aar"
 fabricGradle = "1.31.2"
 kotlin = "1.5.32"
@@ -21,6 +22,7 @@ androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "a
 androidx-cardView = { module = "androidx.cardview:cardview", version.ref = "androidx-cardView" }
 androidx-legacySupport = { module = "androidx.legacy:legacy-support-v4", version.ref = "androidx-legacySupport" }
 androidx-percentLayout = { module = "androidx.percentlayout:percentlayout", version.ref = "androidx-percentLayout" }
+androidx-preference = { module = "androidx.preference:preference", version.ref = "androidx-preference" }
 androidx-recyclerView = { module = "androidx.recyclerview:recyclerview", version.ref = "androidx-recyclerView" }
 google-material = { module = "com.google.android.material:material", version.ref = "google-material" }
 google-wearableSupport = { module = "com.google.android.support:wearable", version.ref = "google.wearableLibrary" }
