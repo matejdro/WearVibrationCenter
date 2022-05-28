@@ -1,6 +1,6 @@
 [versions]
-android-gradle = "7.0.3"
-androidx-appCompat = "1.4.0"
+android-gradle = "7.2.1"
+androidx-appCompat = "1.4.1"
 androidx-cardView = "1.0.0"
 androidx-legacySupport = "1.0.0"
 androidx-percentLayout = "1.0.0"
@@ -13,7 +13,7 @@ google-material = "1.4.0"
 google-wearableLibrary = "2.8.1"
 google-playServices-wearable = "17.1.0"
 licensesDialog = "2.2.0"
-versionsGradle = "0.39.0"
+versionsGradle = "0.42.0"
 wearRemoteList = "1.0"
 
 [libraries]
