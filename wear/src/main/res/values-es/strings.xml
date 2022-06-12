@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dismiss">Rechazar</string>
+    <string name="snooze">Posponer</string>
+    <string name="alarm_snoozed">Alarma pospuesta</string>
+    <string name="timed_mute">Silencio programado</string>
+    <string name="app_mute">App silenciada</string>
+    <string name="app_name_shorter">Vibe center</string>
+    <string name="mute_interval_list_item">%1$s minutos</string>
+    <string name="until_manually">Hasta que se desactive manualmente</string>
+    <string name="timed_mute_success">Vibraciones silenciadas</string>
+    <string name="timed_mute_fail">Silenciamiento fallido</string>
+    <string name="no_notifications">No hay notificaciones activas</string>
+    <string name="app_mute_confirmation_explanation">%1$s estará silenciado hasta que descartes todas sus notificaciones</string>
+    <string name="dont_ask_again">No me vuelvas a preguntar</string>
+    <string name="app_muted">App silenciada</string>
+</resources>

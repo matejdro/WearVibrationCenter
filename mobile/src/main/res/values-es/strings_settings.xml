@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setting_enable_vibrations">Activa las vibraciones</string>
+    <string name="setting_enable_vibrations_description">Interruptor global para todas las vibraciones de esta app</string>
+    <string name="setting_alarm_timeout">Tiempo de espera de la alarma</string>
+    <string name="setting_alarm_timeout_description">La alarma del reloj se detendrá por sí sola después de <![CDATA[<b>%1$s</b>]]> segundos. Úsalo para evitar que la alarma se active indefinidamente cuando el reloj se esté cargando y no estás cerca, por ejemplo.</string>
+    <string name="setting_mute_intervals">Intervalos de silenciado</string>
+    <string name="setting_mute_intervals_description">Lista de intervalos de silenciados que se pueden seleccionar para el silenciamiento temporizado en el reloj.</string>
+    <string name="setting_timed_mute_zen">Silenciado temporizados en no molestar</string>
+    <string name="setting_timed_mute_zen_description">Cuando activas el silenciado temporizado, VC también puede poner tu teléfono (y posteriormente el reloj) en modo no molestar para silenciar también las vibraciones de las notificaciones nativas. <![CDATA[<br /><br />]]>Ajuste actual: <![CDATA[<b>%1$s</b>]]>.</string>
+    <string name="setting_processing_delay">Retraso por vibración</string>
+    <string name="setting_processing_delay_description">VC vibrará <![CDATA[<b>%1$s</b>]]> milisegundos después de que aparezca la notificación para evitar conflicto con las vibraciones nativas. <![CDATA[<br /><br />]]>Aumenta este valor para reducir aún más el conflicto con las vibraciones nativas.<![CDATA[<br /><br />]]>Disminuya este valor para que las vibraciones sean más puntuales (sólo se recomienda si ha tratado las vibraciones nativas de otra manera, como por ejemplo, teniendo activado el modo no molestar constantemente).</string>
+
+    <string name="setting_vibration_type">Tipo de vibración</string>
+    <string name="setting_vibration_type_description">%1$s</string>
+    <string name="category_vibrations">Vibraciones</string>
+    <string name="category_watch_filter">Filtro del reloj</string>
+    <string name="setting_respect_zen_mode">Respetar el modo\'s "no molestar"</string>
+    <string name="setting_respect_zen_mode_on_description">VC <![CDATA[<b>NO</b>]]> vibrará para las notificaciones que estarían silenciadas en el modo no molestar. </string>
+    <string name="setting_respect_zen_mode_off_description">VC <![CDATA[<b>IGNORARÁ</b>]]> modo no molestar y vibra incluso si la notificación se suponía que era silenciada bajo no molestar.</string>
+
+    <string name="setting_only_vibrate_original_vibrating">Sólo vibra para las notificaciones que vibraron en primer lugar.</string>
+    <string name="setting_only_vibrate_original_vibrating_on_description">VC creará <![CDATA[<b>SOLO</b>]]> vibraciones adicionales para las notificaciones que vibrarían en primer lugar (incluso sin Vibration Center instalada).<![CDATA[<br /><br />]]>Por ejemplo, las notificaciones meteorológicas pasivas y silenciosas <![CDATA[<b>NO</b>]]> vibrarán.</string>
+    <string name="setting_only_vibrate_original_vibrating_off_description">VC <![CDATA[<b>TAMBIÉN</b>]]> creará vibraciones adicionales para las notificaciones que no vibrarían en primer lugar (incluso sin Vibration Center instalada). <![CDATA[<br /><br />]]>Por ejemplo, con notificaciones meteorológicas pasivas y silenciosas <![CDATA[<b>VIBRARÁ</b>]]>.</string>
+    <string name="setting_respect_theater_mode">No vibra en modo teatro</string>
+    <string name="setting_respect_theater_mode_on_description">VC <![CDATA[<b>NO</b>]]> creará vibraciones adicionales cuando está en modo teatro.</string>
+    <string name="setting_respect_theater_mode_off_description">VC <![CDATA[<b>CREARÁ</b>]]> vibraciones adicionales independientemente que esté activado modo de teatro.</string>
+
+    <string name="setting_no_vibration_screen_on">No vibra cuando la pantalla del teléfono está encendida</string>
+    <string name="setting_no_vibration_screen_on_on_description">VC <![CDATA[<b>NO</b>]]> creará vibraciones adicionales cuando la pantalla del teléfono esté encendida.</string>
+    <string name="setting_no_vibration_screen_on_off_description">VC <![CDATA[<b>CREARÁ</b>]]> vibraciones adicionales cuando la pantalla del teléfono está encendida.</string>
+    <string name="setting_respect_charging">No vibra durante la carga</string>
+    <string name="setting_respect_charging_on_description">VC <![CDATA[<b>NO</b>]]> creará vibraciones adicionales cuando el reloj está cargando.</string>
+    <string name="setting_respect_charging_off_description">VC <![CDATA[<b>CREARÁ</b>]]> vibraciones adicionales independientemente del estado de carga del reloj.</string>
+    <string name="setting_alarm_respect_theater_mode">No crea alarmas en modo teatro</string>
+    <string name="setting_alarm_respect_theater_mode_on_description">VC <![CDATA[<b>NO</b>]]> creará alarnas en modo teatro.</string>
+    <string name="setting_alarm_respect_theater_mode_off_description">VC <![CDATA[<b>CREARÁ</b>]]> alarmas independientemente del modo de teatro.</string>
+    <string name="setting_alarm_respect_charging">No crear alarma al cargar</string>
+    <string name="setting_alarm_respect_charging_on_description">VC <![CDATA[<b>NO</b>]]> creará una alarma cuando el reloj se está cargando.</string>
+    <string name="setting_alarm_respect_charging_off_description">VC <![CDATA[<b>CREARÁ</b>]]> una alarma independientemente del estado de carga del reloj.</string>
+
+    <string name="setting_vibration_pattern">Patrón de vibración</string>
+    <string name="setting_vibration_pattern_description">%1$s</string>
+    <string name="setting_turn_screen_on">Enciende la pantalla del reloj</string>
+    <string name="setting_turn_screen_on_description_on">Al vibrar, VC <![CDATA[<b>FORZARÁ</b>]]> el encendido de la pantalla del reloj.</string>
+    <string name="setting_turn_screen_on_description_off">VC <![CDATA[<b>NO</b>]]> forzará el encendido de la pantalla del reloj. Tenga en cuenta que Wear OS puede encender la pantalla en su lugar. VC no puede controlar esto, pon el reloj en modo no molestar para evitarlo.</string>
+
+    <string name="category_spam_filter">Filtro de spam</string>
+    <string name="setting_min_vibration_interval">Tiempo mínimo entre vibraciones</string>
+    <string name="setting_min_vibration_interval_description">VC no creará ninguna vibración adicional si la notificación anterior de esta aplicación vibró hace menos de <![CDATA[<b>%1$s</b>]]> milisegundos.</string>
+    <string name="setting_no_update_vibration">No vibra para las actualizaciones de notficación</string>
+    <string name="setting_no_update_vibration_on_description">VC <![CDATA[<b>NO</b>]]> vibrará para actualizar las notificaciones existentes. <![CDATA[<br /><br />]]>Por ejemplo, si ya hay una notificación de chat en su reloj y sólo se actualiza con nuevos mensajes (no nuevas notificaciones por separado), VC <![CDATA[<b>NO</b>]]> vibrará por eso.</string>
+    <string name="setting_no_update_vibration_off_description">VC <![CDATA[<b>VIBRARÁ</b>]]> para actualizar las notificaciones existentes. <![CDATA[<br /><br />]]>Por ejemplo, si ya hay una notificación de chat en tu reloj y sólo se actualiza con los nuevos mensajes (no nuevas notificaciones por separado), VC <![CDATA[<b>TAMBIÉN</b>]]> vibrará por eso.</string>
+    <string name="setting_no_subsequent_notification_vibration">No vibra para las notificaciones posteriores</string>
+    <string name="setting_no_subsequent_notification_vibration_on_description">VC <![CDATA[<b>SOLO</b>]]> vibrará para primeras notificaciones de esta app. <![CDATA[<br /><br />]]>Por ejemplo, si ya tiene una notificación de email en tu reloj y recibes otra notificación de email, VC <![CDATA[<b>NO</b>]]> vibrará para estos emails posteriores.</string>
+    <string name="setting_no_subsequent_notification_vibration_off_description">VC vibrará para <![CDATA[<b>TODAS</b>]]> las notificationes de esta app, la primera y posteriores. <![CDATA[<br /><br />]]>Por ejemplo, si ya tiene una notificación de email en su reloj y recibe otra notificación de email, VC <![CDATA[<b>TAMBIÉN</b>]]> vibrará para esos emails posteriores.</string>
+    <string name="setting_ignore_local_only_vibration">Ignorar la solicitud "Sólo local"</string>
+    <string name="setting_ignore_local_only_description_off">Algunas apps pueden solicitar que sus notificaciones sean locales y no sean replicadas en el reloj (por ejemplo, Play Store lo hace para las notificaciones de actualización). VC <![CDATA[<b>RESPETA</b>]]> esta petición y no vibra para estas notificaciones.</string>
+    <string name="setting_ignore_local_only_description_on">Algunas apps puede solicitar que sus notificaciones sean locales y no sean replicadas en el reloj (por ejemplo, Play Store lo hace para las notificaciones de actualización). VC <![CDATA[<b>IGNORARÁ</b>]]> que solicitan y vibran de todos modos para estas notificaciones.</string>
+    <string name="setting_allow_persistent">Vibración para notificaciones persistentes</string>
+    <string name="setting_allow_persistent_description_off">VC <![CDATA[<b>NO</b>]]> vibrará para notificaciones persistentes (las que no se pueden deslizar fuera de la bandeja de notificaciones).</string>
+    <string name="setting_allow_persistent_description_on">VC <![CDATA[<b>VIBRARÁ</b>]]> para las notificaciones persistentes (las que no se pueden deslizar fuera de la bandeja de notificaciones).</string>
+
+    <string name="setting_excluding_regex">Excluyendo expresiones regulares</string>
+    <string name="setting_excluding_regex_description">Lista de expresiones regulares (distingue entre mayúsculas/minúsculas). Si la notificación contiene <![CDATA[<b>ALGUNO</b>]]> de estos, <![CDATA[<b>NO</b>]]> vibrará.</string>
+    <string name="category_content_filter">Filtro de Contenido</string>
+    <string name="category_general_filter">Filtro general</string>
+    <string name="setting_including_regex">Incluyendo expresiones regulares</string>
+    <string name="setting_including_regex_description">Lista de expresiones regulares (distingue entre mayúsculas/minúsculas). La notificación <![CDATA[<b>DEBE</b>]]> contener <![CDATA[<b>ALGUNA</b>]]> de estas con el fin de vibrar.</string>
+    <string name="setting_alarm_regex">Expresiones regulares de activación de la alarma</string>
+    <string name="setting_alarm_regex_description">Lista de expresiones regulares (distingue entre mayúsculas/minúsculas). Si la notificación contiene <![CDATA[<b>ALGUNO</b>]]> de estos, la notificación  these, notification vibrará en el modo de alarma, incluso si el modo por defecto está configurado en una sola vibración.</string>
+
+    <string name="category_alarm">Modo de alarma</string>
+    <string name="setting_snooze_duration">Duración de Snooze</string>
+    <string name="setting_snooze_duration_description">Las alarmas pospuestas volverán a sonar después de <![CDATA[<b>%1$s</b>]]> segundos.</string>
+    <string name="category_watchapp">Acciones de silenciamiento en el reloj</string>
+
+    <!-- com.matejdro.wearvibrationcenter.preferences.VibrationType -->
+    <string-array name="vibration_type_labels">
+        <item>Ninguno</item>
+        <item>Vibración simple</item>
+        <item>Alarma</item>
+    </string-array>
+    <string-array name="vibration_type_values">
+        <item>NINGUNO</item>
+        <item>NORMAL</item>
+        <item>ALARMA</item>
+    </string-array>
+
+    <!-- com.matejdro.wearvibrationcenter.preferences.ZenModeChange -->
+    <string-array name="zen_change_labels">
+        <item>No cambiar</item>
+        <item>Sólo alarmas</item>
+        <item>Sólo notificaciones prioritarias</item>
+        <item>Silenciar todo</item>
+    </string-array>
+    <string-array name="zen_change_values">
+        <item>NO CAMBIAR</item>
+        <item>ALARMAS</item>
+        <item>PRIORITARIAS</item>
+        <item>NINGUNO</item>
+    </string-array>
+</resources>

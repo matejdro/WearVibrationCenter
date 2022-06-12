@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tip_duplicate_vibrations">Evita las vibraciones dobles</string>
+    <string name="tip_duplicate_vibrations_description">Esta app solo a�ade vibraciones adicionales, no sustituye las existentes.\n\nPara silenciar las vibraciones nativas de Wear OS, pon tu tel�fono (y posteriormente el reloj) en modo de prioridad no solo modo no molestar y permite que las llamadas pasen por el filtro de prioridad en los ajustes del tel�fono.</string>
+    <string name="tip_per_app">Configuraci�n por app</string>
+</resources>
