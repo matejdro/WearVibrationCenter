@@ -1,5 +1,6 @@
 package com.matejdro.wearvibrationcenter.mute;
 
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -7,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -38,11 +40,13 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import dagger.hilt.android.qualifiers.ApplicationContext;
 import timber.log.Timber;
 
 public class AppMuteManager implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, RemoteListProvider, MessageApi.MessageListener {
-    private final GoogleApiClient googleApiClient;
-    private final NotificationService service;
+    private final GoogleApiClient             googleApiClient;
+    private final Context                     context;
+    private final NotificationListenerService notificationService;
 
     private PlayServicesConnectionToReceiver listTransmitter;
 
@@ -54,10 +58,11 @@ public class AppMuteManager implements GoogleApiClient.ConnectionCallbacks, Goog
     private boolean needTextUpdate = true;
 
     @Inject
-    public AppMuteManager(NotificationService service) {
-        this.service = service;
+    public AppMuteManager(@ApplicationContext Context context, NotificationListenerService notificationService) {
+        this.context = context;
+        this.notificationService = notificationService;
 
-        googleApiClient = new GoogleApiClient.Builder(service)
+        googleApiClient = new GoogleApiClient.Builder(context)
                 .addApi(Wearable.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -95,7 +100,7 @@ public class AppMuteManager implements GoogleApiClient.ConnectionCallbacks, Goog
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        GoogleApiAvailability.getInstance().showErrorNotification(service, connectionResult);
+        GoogleApiAvailability.getInstance().showErrorNotification(context, connectionResult);
     }
 
     @Override
@@ -109,7 +114,7 @@ public class AppMuteManager implements GoogleApiClient.ConnectionCallbacks, Goog
 
         Set<String> addedApps = new HashSet<>();
         appList.clear();
-        for (StatusBarNotification notification : service.getActiveNotifications()) {
+        for (StatusBarNotification notification : notificationService.getActiveNotifications()) {
             String appPackage = notification.getPackageName();
             if (addedApps.contains(appPackage)) {
                 continue;
@@ -119,8 +124,8 @@ public class AppMuteManager implements GoogleApiClient.ConnectionCallbacks, Goog
 
             ApplicationInfo applicationInfo;
             try {
-                applicationInfo = service.getPackageManager().getApplicationInfo(appPackage, 0);
-                String label = service.getPackageManager().getApplicationLabel(applicationInfo).toString();
+                applicationInfo = context.getPackageManager().getApplicationInfo(appPackage, 0);
+                String label = context.getPackageManager().getApplicationLabel(applicationInfo).toString();
                 appList.add(new InstalledApp(appPackage, label));
             } catch (PackageManager.NameNotFoundException ignored) {
             }
@@ -212,7 +217,7 @@ public class AppMuteManager implements GoogleApiClient.ConnectionCallbacks, Goog
 
 
         try {
-            Drawable appIconDrawable = service.getPackageManager().getApplicationIcon(appPackage);
+            Drawable appIconDrawable = context.getPackageManager().getApplicationIcon(appPackage);
             Bitmap iconBitmap = BitmapUtils.getBitmap(appIconDrawable);
             if (iconBitmap != null) {
                 iconBitmap = BitmapUtils.shrinkPreservingRatio(iconBitmap, 64, 64);
@@ -224,7 +229,7 @@ public class AppMuteManager implements GoogleApiClient.ConnectionCallbacks, Goog
             e.printStackTrace();
         }
 
-        return BitmapUtils.getBitmap(ResourcesCompat.getDrawable(service.getResources(), android.R.drawable.sym_def_app_icon, null));
+        return BitmapUtils.getBitmap(ResourcesCompat.getDrawable(context.getResources(), android.R.drawable.sym_def_app_icon, null));
     }
 
     @Override
