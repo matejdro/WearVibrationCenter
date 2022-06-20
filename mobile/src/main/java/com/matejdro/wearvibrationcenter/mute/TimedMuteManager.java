@@ -37,6 +37,8 @@ import com.matejdro.wearvibrationcenter.notification.VibrationCenterChannels;
 import com.matejdro.wearvibrationcenter.preferences.GlobalSettings;
 import com.matejdro.wearvibrationcenter.preferences.ZenModeChange;
 
+import javax.inject.Inject;
+
 
 public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, MessageApi.MessageListener {
 
@@ -53,6 +55,7 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
 
     private final PendingIntent unmutePendingIntent;
 
+    @Inject
     public TimedMuteManager(NotificationService service) {
         this.service = service;
 

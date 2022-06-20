@@ -8,6 +8,7 @@ androidx-percentLayout = "1.0.0"
 androidx-recyclerView = "1.2.1"
 androidx-preference = "1.2.0"
 crashlytics = "2.6.5@aar"
+dagger-hilt = "2.38.1"
 fabricGradle = "1.31.2"
 kotlin = "1.5.32"
 google-material = "1.4.0"
@@ -25,6 +26,9 @@ androidx-legacySupport = { module = "androidx.legacy:legacy-support-v4", version
 androidx-percentLayout = { module = "androidx.percentlayout:percentlayout", version.ref = "androidx-percentLayout" }
 androidx-preference = { module = "androidx.preference:preference", version.ref = "androidx-preference" }
 androidx-recyclerView = { module = "androidx.recyclerview:recyclerview", version.ref = "androidx-recyclerView" }
+dagger-hilt-gradlePlugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "dagger.hilt" }
+dagger-hilt-runtime = { module = "com.google.dagger:hilt-android", version.ref = "dagger.hilt" }
+dagger-hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "dagger.hilt" }
 google-material = { module = "com.google.android.material:material", version.ref = "google-material" }
 google-wearableSupport = { module = "com.google.android.support:wearable", version.ref = "google.wearableLibrary" }
 google-wearableLibrary = { module = "com.google.android.wearable:wearable", version.ref = "google-wearableLibrary" }

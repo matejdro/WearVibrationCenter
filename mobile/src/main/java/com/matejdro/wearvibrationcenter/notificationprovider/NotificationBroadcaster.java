@@ -8,12 +8,18 @@ import android.os.IBinder;
 
 import com.matejdro.wearvibrationcenter.notification.ProcessedNotification;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.qualifiers.ApplicationContext;
+
+
 public class NotificationBroadcaster {
     private Context context;
 
     private NotificationBroadcastMediator mediator;
 
-    public NotificationBroadcaster(Context context) {
+    @Inject
+    public NotificationBroadcaster(@ApplicationContext  Context context) {
         this.context = context;
 
         Intent intent = new Intent();

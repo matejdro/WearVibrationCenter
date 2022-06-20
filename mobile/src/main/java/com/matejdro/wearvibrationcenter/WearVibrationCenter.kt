@@ -6,7 +6,9 @@ import android.content.pm.ApplicationInfo
 import timber.log.Timber.AndroidDebugTree
 import com.matejdro.wearutils.logging.FileLogger
 import com.matejdro.wearvibrationcenter.notification.VibrationCenterChannels
+import dagger.hilt.android.HiltAndroidApp
 
+@HiltAndroidApp
 class WearVibrationCenter : Application() {
     override fun onCreate() {
         super.onCreate()

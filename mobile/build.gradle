@@ -8,6 +8,8 @@ buildscript {
     }
 }
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
 //apply plugin: 'io.fabric'
 
 repositories {
@@ -45,9 +47,12 @@ dependencies {
     implementation libs.androidx.cardView
     implementation libs.androidx.percentLayout
     implementation libs.androidx.preference
+    implementation libs.dagger.hilt.runtime
     implementation libs.google.material
     implementation libs.google.wearableLibrary
     implementation libs.licensesDialog
+
+    kapt libs.dagger.hilt.compiler
 
     // This must be here to prevent build from complaining since included library also includes
     // wearable support. Of course phone does not have wearable features.
@@ -69,3 +74,5 @@ allprojects {
         android.signingConfigs[debugConfig].keyPassword = props['keyPassword']
     }
 }
+
+apply plugin: 'dagger.hilt.android.plugin'

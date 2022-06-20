@@ -11,6 +11,7 @@ buildscript {
         classpath libs.android.gradle
         classpath libs.kotlin.gradle
         classpath libs.versionsGradle
+        classpath libs.dagger.hilt.gradlePlugin
 
 
         // NOTE: Do not place your application dependencies here; they belong

@@ -23,12 +23,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+
 import timber.log.Timber;
 
 public class NotificationProcessor {
     private final NotificationService service;
     private final Map<String, Long> lastVibrations = new ArrayMap<>();
 
+    @Inject
     public NotificationProcessor(NotificationService service) {
         this.service = service;
     }

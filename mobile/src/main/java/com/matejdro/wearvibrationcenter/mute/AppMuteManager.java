@@ -36,6 +36,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.inject.Inject;
+
 import timber.log.Timber;
 
 public class AppMuteManager implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, RemoteListProvider, MessageApi.MessageListener {
@@ -51,6 +53,7 @@ public class AppMuteManager implements GoogleApiClient.ConnectionCallbacks, Goog
     private boolean needIconUpdate = true;
     private boolean needTextUpdate = true;
 
+    @Inject
     public AppMuteManager(NotificationService service) {
         this.service = service;
 

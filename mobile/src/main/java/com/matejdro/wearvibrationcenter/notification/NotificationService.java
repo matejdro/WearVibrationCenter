@@ -10,6 +10,8 @@ import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 
 import com.matejdro.wearutils.preferences.definition.Preferences;
+import com.matejdro.wearvibrationcenter.di.NotificationServiceComponent;
+import com.matejdro.wearvibrationcenter.di.NotificationServiceEntryPoint;
 import com.matejdro.wearvibrationcenter.mute.AppMuteManager;
 import com.matejdro.wearvibrationcenter.mute.TimedMuteManager;
 import com.matejdro.wearvibrationcenter.notificationprovider.NotificationBroadcaster;
@@ -22,8 +24,13 @@ import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import javax.inject.Inject;
+
+import dagger.hilt.EntryPoints;
+import dagger.hilt.android.AndroidEntryPoint;
 import timber.log.Timber;
 
+@AndroidEntryPoint
 public class NotificationService extends NotificationListenerService {
     public static final int MESSAGE_PROCESS_PENDING = 0;
     public static final int MESSAGE_ADD_NOTIFICATION = 1;
@@ -33,6 +40,10 @@ public class NotificationService extends NotificationListenerService {
     public static boolean active;
     private final LinkedList<ProcessedNotification> pendingNotifications = new LinkedList<>();
     private Handler handler;
+
+    @Inject
+    public NotificationServiceComponent.Builder builder;
+
     /**
      * To determine whether notification is new or just an update of old notification,
      * we need a list of previous notifications before new one appeared
@@ -66,13 +77,17 @@ public class NotificationService extends NotificationListenerService {
 
         super.onCreate();
 
+        NotificationServiceComponent component = builder.service(this).build();
+        NotificationServiceEntryPoint entryPoint = EntryPoints.get(component, NotificationServiceEntryPoint.class);
+
+
         handler = new NotificationRefreshHandler(this);
         globalSettings = PreferenceManager.getDefaultSharedPreferences(this);
 
-        processor = new NotificationProcessor(this);
-        timedMuteManager = new TimedMuteManager(this);
-        appMuteManager = new AppMuteManager(this);
-        notificationBroadcaster = new NotificationBroadcaster(this);
+        processor = entryPoint.createNotificationProcessor();
+        timedMuteManager = entryPoint.createTimedMuteManager();
+        appMuteManager = entryPoint.createAppMuteManager();
+        notificationBroadcaster = entryPoint.createNotificationBroadcaster();
 
         scheduleActiveListUpdate();
     }
