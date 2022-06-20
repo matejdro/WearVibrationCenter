@@ -1,6 +1,5 @@
 package com.matejdro.wearvibrationcenter.mute;
 
-import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -9,7 +8,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,7 +18,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -39,25 +37,33 @@ import com.matejdro.wearvibrationcenter.preferences.ZenModeChange;
 
 import javax.inject.Inject;
 
+import dagger.hilt.android.qualifiers.ApplicationContext;
+import timber.log.Timber;
+
 
 public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, MessageApi.MessageListener {
 
     private static final int    NOTIFICATION_ID_MUTE_DURATION = 0;
     private static final String ACTON_UNMUTE                  = "com.matejdro.wearvibrationcenter.action.UNMUTE";
 
-    private final GoogleApiClient     googleApiClient;
-    private final BroadcastReceiver   unmuteReceiver;
-    private final NotificationService service;
-    private final AlarmManager        alarmManager;
+    private final GoogleApiClient             googleApiClient;
+    private final BroadcastReceiver           unmuteReceiver;
+    private final Context                     context;
+    private final NotificationListenerService notificationService;
+    private final SharedPreferences           preferences;
+    private final AlarmManager                alarmManager;
 
     private boolean mutedCurrently  = false;
     private int     previousZenMode = 0;
 
     private final PendingIntent unmutePendingIntent;
 
+
     @Inject
-    public TimedMuteManager(NotificationService service) {
-        this.service = service;
+    public TimedMuteManager(@ApplicationContext Context context, NotificationListenerService service, SharedPreferences preferences) {
+        this.notificationService = service;
+        this.context = context;
+        this.preferences = preferences;
 
         googleApiClient = new GoogleApiClient.Builder(service).addApi(Wearable.API).addConnectionCallbacks(this).addOnConnectionFailedListener(this).build();
         googleApiClient.connect();
@@ -67,7 +73,10 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
 
         alarmManager = (AlarmManager) service.getSystemService(Context.ALARM_SERVICE);
 
-        unmutePendingIntent = PendingIntent.getBroadcast(service, 0, new Intent(ACTON_UNMUTE), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        unmutePendingIntent = PendingIntent.getBroadcast(service,
+                                                         0,
+                                                         new Intent(ACTON_UNMUTE),
+                                                         PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
     public void onDestroy() {
@@ -78,7 +87,7 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
             googleApiClient.disconnect();
         }
 
-        service.unregisterReceiver(unmuteReceiver);
+        context.unregisterReceiver(unmuteReceiver);
         alarmManager.cancel(unmutePendingIntent);
     }
 
@@ -93,15 +102,15 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
             mutedUntil = System.currentTimeMillis() + timedMuteCommand.getMuteDurationMinutes() * 1000 * 60;
         }
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(service,
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context,
                                                                             VibrationCenterChannels.CHANNEL_TEMPORARY_MUTE).setSmallIcon(R.drawable.ic_notification)
                                                                                                                            .setPriority(Notification.PRIORITY_MIN)
                                                                                                                            .setDeleteIntent(unmutePendingIntent)
-                                                                                                                           .setContentTitle(service.getString(R.string.vibrations_muted_notification_title))
-                                                                                                                           .setContentText(service.getString(R.string.vibrations_muted_notification_explanation));
+                                                                                                                           .setContentTitle(context.getString(R.string.vibrations_muted_notification_title))
+                                                                                                                           .setContentText(context.getString(R.string.vibrations_muted_notification_explanation));
 
         NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender();
-        wearableExtender.addAction(new NotificationCompat.Action(R.drawable.ic_dismiss_mute, service.getString(R.string.cancel_mute), unmutePendingIntent));
+        wearableExtender.addAction(new NotificationCompat.Action(R.drawable.ic_dismiss_mute, context.getString(R.string.cancel_mute), unmutePendingIntent));
         builder.extend(wearableExtender);
 
         if (mutedUntil > 0) {
@@ -117,7 +126,7 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
             }
         }
 
-        NotificationManagerCompat.from(service).notify(NOTIFICATION_ID_MUTE_DURATION, builder.build());
+        NotificationManagerCompat.from(context).notify(NOTIFICATION_ID_MUTE_DURATION, builder.build());
         mutedCurrently = true;
 
         previousZenMode = 0;
@@ -128,7 +137,7 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void activateZenMode() {
-        ZenModeChange doNotDistrubChange = Preferences.getEnum(service.getGlobalSettings(), GlobalSettings.TIMED_MUTE_ZEN_CHANGE);
+        ZenModeChange doNotDistrubChange = Preferences.getEnum(preferences, GlobalSettings.TIMED_MUTE_ZEN_CHANGE);
 
         if (doNotDistrubChange != ZenModeChange.NO_CHANGE) {
             int newZenMode;
@@ -148,8 +157,12 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
                     newZenMode = NotificationListenerService.INTERRUPTION_FILTER_NONE;
             }
 
-            previousZenMode = service.getCurrentInterruptionFilter();
-            service.requestInterruptionFilterSafe(newZenMode);
+            previousZenMode = notificationService.getCurrentInterruptionFilter();
+            try {
+                notificationService.requestInterruptionFilter(newZenMode);
+            } catch (SecurityException e) {
+                Timber.w("Notification listener has been disabled before unmute.");
+            }
         }
     }
 
@@ -160,11 +173,15 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
         }
 
         mutedCurrently = false;
-        NotificationManagerCompat.from(service).cancel(NOTIFICATION_ID_MUTE_DURATION);
+        NotificationManagerCompat.from(context).cancel(NOTIFICATION_ID_MUTE_DURATION);
         alarmManager.cancel(unmutePendingIntent);
 
         if (previousZenMode != 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            service.requestInterruptionFilterSafe(previousZenMode);
+            try {
+                notificationService.requestInterruptionFilter(previousZenMode);
+            } catch (SecurityException e) {
+                Timber.w("Notification listener has been disabled before unmute.");
+            }
             previousZenMode = 0;
         }
     }
@@ -187,7 +204,7 @@ public class TimedMuteManager implements GoogleApiClient.ConnectionCallbacks, Go
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        GoogleApiAvailability.getInstance().showErrorNotification(service, connectionResult);
+        GoogleApiAvailability.getInstance().showErrorNotification(context, connectionResult);
     }
 
     @Override

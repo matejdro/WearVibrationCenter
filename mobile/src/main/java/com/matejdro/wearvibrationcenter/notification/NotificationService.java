@@ -156,15 +156,6 @@ public class NotificationService extends NotificationListenerService {
         return globalSettings;
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void requestInterruptionFilterSafe(int interruptionFilter) {
-        try {
-            requestInterruptionFilter(interruptionFilter);
-        } catch (SecurityException e) {
-            Timber.w("Notification listener has been disabled before unmute.");
-        }
-    }
-
     private void fillMetadata(ProcessedNotification notification)
     {
         for (StatusBarNotification other : previousList) {
