@@ -22,6 +22,8 @@ android {
 }
 
 dependencies {
-    api libs.wearRemoteList
     implementation project(':wearutils')
+
+    implementation(libs.androidx.annotation)
+    implementation(libs.google.playServices.wearable)
 }

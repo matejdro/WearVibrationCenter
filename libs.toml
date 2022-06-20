@@ -1,5 +1,6 @@
 [versions]
 android-gradle = "7.2.1"
+androidx-annotation = "1.4.0"
 androidx-appCompat = "1.4.1"
 androidx-cardView = "1.0.0"
 androidx-legacySupport = "1.0.0"
@@ -14,10 +15,10 @@ google-wearableLibrary = "2.8.1"
 google-playServices-wearable = "17.1.0"
 licensesDialog = "2.2.0"
 versionsGradle = "0.42.0"
-wearRemoteList = "1.0"
 
 [libraries]
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android.gradle" }
+androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation" }
 androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appCompat" }
 androidx-cardView = { module = "androidx.cardview:cardview", version.ref = "androidx-cardView" }
 androidx-legacySupport = { module = "androidx.legacy:legacy-support-v4", version.ref = "androidx-legacySupport" }
@@ -33,4 +34,3 @@ fabricGradle = { module = "io.fabric.tools:gradle", version.ref = "fabricGradle"
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 licensesDialog = { module = "de.psdev.licensesdialog:licensesdialog", version.ref = "licensesDialog" }
 versionsGradle = { module = "com.github.ben-manes:gradle-versions-plugin", version.ref = "versionsGradle" }
-wearRemoteList = { module = "com.matejdro:wear-remote-list", version.ref = "wearRemoteList" }
