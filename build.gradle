@@ -27,14 +27,12 @@ allprojects {
 
     if (it.name != "wearutils") {
         apply plugin: "com.github.ben-manes.versions"
-        afterEvaluate {
-            tasks.named("dependencyUpdates").configure {
-                rejectVersionIf {
-                    it.candidate.version.contains("alpha") ||
-                            it.candidate.version.contains("beta") ||
-                            it.candidate.version.contains("RC") ||
-                            it.candidate.version.contains("M")
-                }
+        tasks.named("dependencyUpdates").configure {
+            rejectVersionIf {
+                it.candidate.version.contains("alpha") ||
+                        it.candidate.version.contains("beta") ||
+                        it.candidate.version.contains("RC") ||
+                        it.candidate.version.contains("M")
             }
         }
     }
