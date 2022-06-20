@@ -165,10 +165,6 @@ public class NotificationService extends NotificationListenerService {
         }
     }
 
-    public void onNotificationVibrated(ProcessedNotification notification) {
-        notificationBroadcaster.onNewNotification(notification);
-    }
-
     private void fillMetadata(ProcessedNotification notification)
     {
         for (StatusBarNotification other : previousList) {

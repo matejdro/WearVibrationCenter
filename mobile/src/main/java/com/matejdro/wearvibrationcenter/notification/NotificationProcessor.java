@@ -1,6 +1,7 @@
 package com.matejdro.wearvibrationcenter.notification;
 
 import android.app.Notification;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Build;
@@ -15,6 +16,7 @@ import com.matejdro.wearutils.miscutils.TextUtils;
 import com.matejdro.wearutils.preferences.definition.Preferences;
 import com.matejdro.wearvibrationcenter.common.AlarmCommand;
 import com.matejdro.wearvibrationcenter.common.VibrationCommand;
+import com.matejdro.wearvibrationcenter.notificationprovider.NotificationBroadcaster;
 import com.matejdro.wearvibrationcenter.preferences.PerAppSettings;
 import com.matejdro.wearvibrationcenter.preferences.VibrationType;
 import com.matejdro.wearvibrationcenter.watch.WatchCommander;
@@ -25,15 +27,24 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import dagger.hilt.android.qualifiers.ApplicationContext;
 import timber.log.Timber;
 
 public class NotificationProcessor {
-    private final NotificationService service;
+    private final Context context;
+    private final NotificationBroadcaster notificationBroadcaster;
+    private final NotificationListenerService notificationService;
     private final Map<String, Long> lastVibrations = new ArrayMap<>();
 
     @Inject
-    public NotificationProcessor(NotificationService service) {
-        this.service = service;
+    public NotificationProcessor(
+            @ApplicationContext Context context,
+            NotificationBroadcaster notificationBroadcaster,
+            NotificationListenerService NotificationService
+    ) {
+        this.context = context;
+        this.notificationBroadcaster = notificationBroadcaster;
+        this.notificationService = NotificationService;
     }
 
     public void processPendingNotifications(List<ProcessedNotification> pendingNotifications) {
@@ -70,7 +81,7 @@ public class NotificationProcessor {
             }
 
             if (vibrationType == VibrationType.ALARM) {
-                service.onNotificationVibrated(notification);
+                notificationBroadcaster.onNewNotification(notification);
                 processAlarm(notification);
                 return;
             }
@@ -103,14 +114,14 @@ public class NotificationProcessor {
         }
 
         if (lastFilteredNotification != null) {
-            service.onNotificationVibrated(lastFilteredNotification);
+            notificationBroadcaster.onNewNotification(lastFilteredNotification);
         }
 
         final VibrationCommand vibrationCommand = new VibrationCommand(longestPattern,
                 respectTheater,
                 respectCharger,
                 forceScreenOn);
-        WatchCommander.sendVibrationCommand(service, vibrationCommand);
+        WatchCommander.sendVibrationCommand(context, vibrationCommand);
     }
 
     private void processAlarm(ProcessedNotification notification) {
@@ -122,8 +133,8 @@ public class NotificationProcessor {
         boolean respectTheater = Preferences.getBoolean(appPreferences, PerAppSettings.RESPECT_THETAER_MODE);
         boolean respectCharger = Preferences.getBoolean(appPreferences, PerAppSettings.RESPECT_CHARGING);
 
-        Bitmap icon = NotificationUtils.getNotificationIcon(service, notification.getContentNotification());
-        Bitmap background = NotificationUtils.getNotificationBackgroundImage(service, notification.getContentNotification());
+        Bitmap icon = NotificationUtils.getNotificationIcon(context, notification.getContentNotification());
+        Bitmap background = NotificationUtils.getNotificationBackgroundImage(context, notification.getContentNotification());
         background = BitmapUtils.shrinkPreservingRatio(background, 400, 400);
 
         int snoozeDuration = Preferences.getInt(appPreferences, PerAppSettings.SNOOZE_DURATION);
@@ -136,7 +147,7 @@ public class NotificationProcessor {
                 respectTheater,
                 respectCharger);
 
-        WatchCommander.sendAlarmCommand(service, alarmCommand);
+        WatchCommander.sendAlarmCommand(context, alarmCommand);
     }
 
 
@@ -177,7 +188,7 @@ public class NotificationProcessor {
         }
 
         if (Preferences.getBoolean(appPreferences, PerAppSettings.NO_VIBRATIONS_SCREEN_ON) &&
-                DeviceUtils.isScreenOn(service)) {
+                DeviceUtils.isScreenOn(context)) {
             Timber.d("Filter fail - screen on");
             return false;
         }
@@ -240,7 +251,7 @@ public class NotificationProcessor {
         if (NotificationCompat.isGroupSummary(notification.getContentNotification().getNotification())) {
             // If notification is summary and there are content notifications, it should go through
 
-            StatusBarNotification[] currentNotifications = service.getActiveNotifications();
+            StatusBarNotification[] currentNotifications = notificationService.getActiveNotifications();
             for (StatusBarNotification otherNotification : currentNotifications) {
                 if (otherNotification.getPackageName().equals(appPackage) &&
                         group.equals(NotificationCompat.getGroup(otherNotification.getNotification())) &&
@@ -252,7 +263,7 @@ public class NotificationProcessor {
         } else {
             // If notification is not summary, then we attempt to get metadata (vibration etc.) from the summary
 
-            StatusBarNotification[] currentNotifications = service.getActiveNotifications();
+            StatusBarNotification[] currentNotifications = notificationService.getActiveNotifications();
             for (StatusBarNotification otherNotification : currentNotifications) {
                 if (otherNotification.getPackageName().equals(appPackage) &&
                         group.equals(NotificationCompat.getGroup(otherNotification.getNotification())) &&
@@ -286,7 +297,7 @@ public class NotificationProcessor {
             return true;
         }
 
-        NotificationListenerService.RankingMap rankingMap = service.getCurrentRanking();
+        NotificationListenerService.RankingMap rankingMap = notificationService.getCurrentRanking();
         if (rankingMap == null) {
             return false;
         }
