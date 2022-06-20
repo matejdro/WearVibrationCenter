@@ -1,28 +1,23 @@
-package com.matejdro.wearvibrationcenter;
+package com.matejdro.wearvibrationcenter
 
-import android.app.Application;
-import android.content.pm.ApplicationInfo;
+import android.app.Application
+import timber.log.Timber
+import android.content.pm.ApplicationInfo
+import timber.log.Timber.AndroidDebugTree
+import com.matejdro.wearutils.logging.FileLogger
+import com.matejdro.wearvibrationcenter.notification.VibrationCenterChannels
 
-import com.matejdro.wearutils.logging.FileLogger;
-import com.matejdro.wearvibrationcenter.notification.VibrationCenterChannels;
+class WearVibrationCenter : Application() {
+    override fun onCreate() {
+        super.onCreate()
 
-import pl.tajchert.exceptionwear.ExceptionDataListenerService;
-import timber.log.Timber;
+        Timber.setAppTag("WearVibrationCenter")
+        val isDebuggable = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+        Timber.plant(AndroidDebugTree(isDebuggable))
+        val fileLogger = FileLogger.getInstance(this)
+        fileLogger.activate()
+        Timber.plant(fileLogger)
 
-public class WearVibrationCenter extends Application {
-    @Override
-    public void onCreate() {
-        super.onCreate();
-
-        Timber.setAppTag("WearVibrationCenter");
-
-        boolean isDebuggable = (getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
-        Timber.plant(new Timber.AndroidDebugTree(isDebuggable));
-
-        FileLogger fileLogger = FileLogger.getInstance(this);
-        fileLogger.activate();
-        Timber.plant(fileLogger);
-
-        VibrationCenterChannels.init(this);
+        VibrationCenterChannels.init(this)
     }
 }
