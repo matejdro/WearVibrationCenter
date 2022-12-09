@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 //noinspection GroovyMissingReturnStatement
 android {
-    compileSdkVersion 31
+    compileSdkVersion 33
     defaultConfig {
         applicationId "com.matejdro.wearvibrationcenter"
         minSdkVersion 23
@@ -28,6 +28,7 @@ dependencies {
     implementation libs.androidx.percentLayout
     implementation libs.androidx.recyclerView
     implementation libs.androidx.legacySupport
+    implementation libs.androidx.lifecycle.viewModel
 
     implementation libs.google.playServices.wearable
 }

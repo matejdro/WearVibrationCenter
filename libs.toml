@@ -1,21 +1,22 @@
 [versions]
-android-gradle = "7.2.1"
-androidx-annotation = "1.4.0"
-androidx-appCompat = "1.4.1"
+android-gradle = "7.3.1"
+androidx-annotation = "1.5.0"
+androidx-appCompat = "1.5.1"
 androidx-cardView = "1.0.0"
 androidx-legacySupport = "1.0.0"
 androidx-percentLayout = "1.0.0"
 androidx-recyclerView = "1.2.1"
 androidx-preference = "1.2.0"
+androidx-lifecycle = "2.5.1"
 crashlytics = "2.6.5@aar"
-dagger-hilt = "2.38.1"
+dagger-hilt = "2.44.2"
 fabricGradle = "1.31.2"
-kotlin = "1.5.32"
-google-material = "1.4.0"
-google-wearableLibrary = "2.8.1"
-google-playServices-wearable = "17.1.0"
+kotlin = "1.7.22"
+google-material = "1.7.0"
+google-wearableLibrary = "2.9.0"
+google-playServices-wearable = "18.0.0"
 licensesDialog = "2.2.0"
-versionsGradle = "0.42.0"
+versionsGradle = "0.44.0"
 
 [libraries]
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android.gradle" }
@@ -26,6 +27,7 @@ androidx-legacySupport = { module = "androidx.legacy:legacy-support-v4", version
 androidx-percentLayout = { module = "androidx.percentlayout:percentlayout", version.ref = "androidx-percentLayout" }
 androidx-preference = { module = "androidx.preference:preference", version.ref = "androidx-preference" }
 androidx-recyclerView = { module = "androidx.recyclerview:recyclerview", version.ref = "androidx-recyclerView" }
+androidx-lifecycle-viewModel = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "androidx.lifecycle" }
 dagger-hilt-gradlePlugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "dagger.hilt" }
 dagger-hilt-runtime = { module = "com.google.dagger:hilt-android", version.ref = "dagger.hilt" }
 dagger-hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "dagger.hilt" }

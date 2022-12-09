@@ -21,7 +21,6 @@ buildscript {
 
 allprojects {
     repositories {
-        maven { url 'https://maven.google.com' }
         mavenCentral()
         google()
     }
@@ -32,7 +31,9 @@ allprojects {
             rejectVersionIf {
                 it.candidate.version.contains("alpha") ||
                         it.candidate.version.contains("beta") ||
+                        it.candidate.version.contains("Beta") ||
                         it.candidate.version.contains("RC") ||
+                        it.candidate.version.contains("rc") ||
                         it.candidate.version.contains("M")
             }
         }

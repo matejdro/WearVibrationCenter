@@ -18,7 +18,7 @@ repositories {
 
 //noinspection GroovyMissingReturnStatement
 android {
-    compileSdkVersion 31
+    compileSdkVersion 33
     defaultConfig {
         applicationId "com.matejdro.wearvibrationcenter"
         minSdkVersion 23
@@ -47,6 +47,7 @@ dependencies {
     implementation libs.androidx.cardView
     implementation libs.androidx.percentLayout
     implementation libs.androidx.preference
+    implementation libs.androidx.lifecycle.viewModel
     implementation libs.dagger.hilt.runtime
     implementation libs.google.material
     implementation libs.google.wearableLibrary
