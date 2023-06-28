@@ -20,7 +20,7 @@ licensesDialog = "2.2.0"
 versionsGradle = "0.47.0"
 
 [libraries]
-android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android.gradle" }
+android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
 androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation" }
 androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appCompat" }
 androidx-cardView = { module = "androidx.cardview:cardview", version.ref = "androidx-cardView" }
@@ -28,10 +28,10 @@ androidx-legacySupport = { module = "androidx.legacy:legacy-support-v4", version
 androidx-percentLayout = { module = "androidx.percentlayout:percentlayout", version.ref = "androidx-percentLayout" }
 androidx-preference = { module = "androidx.preference:preference", version.ref = "androidx-preference" }
 androidx-recyclerView = { module = "androidx.recyclerview:recyclerview", version.ref = "androidx-recyclerView" }
-androidx-lifecycle-viewModel = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "androidx.lifecycle" }
-dagger-hilt-gradlePlugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "dagger.hilt" }
-dagger-hilt-runtime = { module = "com.google.dagger:hilt-android", version.ref = "dagger.hilt" }
-dagger-hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "dagger.hilt" }
+androidx-lifecycle-viewModel = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "androidx-lifecycle" }
+dagger-hilt-gradlePlugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "dagger-hilt" }
+dagger-hilt-runtime = { module = "com.google.dagger:hilt-android", version.ref = "dagger-hilt" }
+dagger-hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "dagger-hilt" }
 google-material = { module = "com.google.android.material:material", version.ref = "google-material" }
 google-wearableSupport = { module = "com.google.android.support:wearable", version.ref = "google.wearableLibrary" }
 google-wearableLibrary = { module = "com.google.android.wearable:wearable", version.ref = "google-wearableLibrary" }

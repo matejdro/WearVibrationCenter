@@ -3,6 +3,7 @@ apply plugin: 'com.android.library'
 //noinspection GroovyMissingReturnStatement
 android {
     compileSdkVersion 33
+    namespace = "com.matejdro.wearvibrationcenter.common"
 
     defaultConfig {
         minSdkVersion 23
@@ -19,6 +20,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
 }
 
 dependencies {

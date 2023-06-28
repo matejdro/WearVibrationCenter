@@ -1,7 +1,5 @@
 include ':mobile', ':wear', ':common', ':wearutils'
 
-enableFeaturePreview("VERSION_CATALOGS")
-
 dependencyResolutionManagement {
     versionCatalogs {
         libs {
