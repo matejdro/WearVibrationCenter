@@ -10,7 +10,7 @@ buildscript {
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
-//apply plugin: 'io.fabric'
+apply plugin: 'toml-version-bump'
 
 repositories {
     maven { url 'https://maven.fabric.io/public' }

@@ -12,6 +12,7 @@ buildscript {
         classpath libs.kotlin.gradle
         classpath libs.versionsGradle
         classpath libs.dagger.hilt.gradlePlugin
+        classpath libs.kotlinova.gradle
 
 
         // NOTE: Do not place your application dependencies here; they belong
@@ -25,18 +26,22 @@ allprojects {
         google()
     }
 
-    if (it.name != "wearutils") {
-        apply plugin: "com.github.ben-manes.versions"
-        tasks.named("dependencyUpdates").configure {
-            rejectVersionIf {
-                it.candidate.version.contains("alpha") ||
-                        it.candidate.version.contains("beta") ||
-                        it.candidate.version.contains("Beta") ||
-                        it.candidate.version.contains("RC") ||
-                        it.candidate.version.contains("rc") ||
-                        it.candidate.version.contains("M")
-            }
+    apply plugin: "toml-version-bump"
+    apply plugin: "com.github.ben-manes.versions"
+
+
+    tasks.named("dependencyUpdates").configure {
+        rejectVersionIf {
+            it.candidate.version.contains("alpha") ||
+                    it.candidate.version.contains("beta") ||
+                    it.candidate.version.contains("Beta") ||
+                    it.candidate.version.contains("RC") ||
+                    it.candidate.version.contains("rc") ||
+                    it.candidate.version.contains("M")
         }
+
+        reportfileName = "versions"
+        outputFormatter = "json"
     }
 }
 
