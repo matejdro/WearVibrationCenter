@@ -19,12 +19,12 @@ repositories {
 
 //noinspection GroovyMissingReturnStatement
 android {
-    compileSdkVersion 33
+    compileSdkVersion 34
     namespace = "com.matejdro.wearvibrationcenter"
     defaultConfig {
         applicationId "com.matejdro.wearvibrationcenter"
         minSdkVersion 23
-        targetSdkVersion 31
+        targetSdkVersion 33
         versionCode 19
         versionName "1.3.0"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'

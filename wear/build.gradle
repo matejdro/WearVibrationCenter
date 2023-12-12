@@ -2,12 +2,12 @@ apply plugin: 'com.android.application'
 
 //noinspection GroovyMissingReturnStatement
 android {
-    compileSdkVersion 33
+    compileSdkVersion 34
     namespace = "com.matejdro.wearvibrationcenter"
     defaultConfig {
         applicationId "com.matejdro.wearvibrationcenter"
         minSdkVersion 23
-        targetSdkVersion 28
+        targetSdkVersion 30
         versionCode 116
         versionName "1.3.0"
 
