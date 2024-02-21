@@ -17,8 +17,15 @@ import com.matejdro.wearvibrationcenter.preferences.GlobalSettings
 import com.matejdro.wearvibrationcenter.preferences.PerAppSettings
 import com.matejdro.wearvibrationcenter.preferences.PerAppSharedPreferences
 import com.matejdro.wearvibrationcenter.preferences.VibrationType
+import com.matejdro.wearvibrationcenter.util.Debouncer
 import dagger.hilt.EntryPoints
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import si.inova.kotlinova.core.time.DefaultTimeProvider
 import timber.log.Timber
 import java.lang.ref.WeakReference
 import java.util.LinkedList
@@ -28,7 +35,6 @@ import kotlin.math.max
 @AndroidEntryPoint
 class NotificationService : NotificationListenerService() {
     private val pendingNotifications = LinkedList<ProcessedNotification>()
-    private lateinit var handler: Handler
 
     @Inject
     lateinit var builder: NotificationServiceComponent.Builder
@@ -44,12 +50,17 @@ class NotificationService : NotificationListenerService() {
     private lateinit var notificationBroadcaster: NotificationBroadcaster
     lateinit var globalSettings: SharedPreferences
 
+    private val coroutineScope = MainScope()
+    private val debouncer = Debouncer(coroutineScope, DefaultTimeProvider)
+
+    private var previousListUpdateJob: Job? = null
+
     override fun onDestroy() {
         active = false
-        handler.removeCallbacksAndMessages(null)
         timedMuteManager.onDestroy()
         appMuteManager.onDestroy()
         notificationBroadcaster.onDestroy()
+        coroutineScope.cancel()
         super.onDestroy()
         Timber.d("Notification Listener stopped...")
     }
@@ -60,7 +71,6 @@ class NotificationService : NotificationListenerService() {
         super.onCreate()
         val component = builder.service(this).build()
         val entryPoint = EntryPoints.get(component, NotificationServiceEntryPoint::class.java)
-        handler = NotificationRefreshHandler(this)
         globalSettings = PreferenceManager.getDefaultSharedPreferences(this)
         processor = entryPoint.createNotificationProcessor()
         timedMuteManager = entryPoint.createTimedMuteManager()
@@ -88,10 +98,10 @@ class NotificationService : NotificationListenerService() {
             Timber.d("Notification filtered: app mute")
             return
         }
-        val message = Message.obtain()
-        message.what = MESSAGE_ADD_NOTIFICATION
-        message.obj = processedNotification
-        handler.sendMessage(message)
+
+        coroutineScope.launch {
+            addNotificationSync(processedNotification)
+        }
     }
 
     override fun onNotificationRemoved(removedNotification: StatusBarNotification) {
@@ -100,10 +110,9 @@ class NotificationService : NotificationListenerService() {
             removedNotification.packageName,
             removedNotification.id
         )
-        val message = Message.obtain()
-        message.what = MESSAGE_REMOVE_NOTIFICATION
-        message.obj = removedNotification
-        handler.sendMessage(message)
+        coroutineScope.launch {
+            removeNotificationSync(removedNotification)
+        }
         scheduleActiveListUpdate()
     }
 
@@ -151,11 +160,11 @@ class NotificationService : NotificationListenerService() {
         // is enforced to catch all notifications in the wear group
         var procesingDelay = Preferences.getInt(globalSettings, GlobalSettings.PROCESSING_DELAY)
         procesingDelay = max(250.0, procesingDelay.toDouble()).toInt()
-        handler.removeMessages(MESSAGE_PROCESS_PENDING)
-        handler.sendMessageDelayed(
-            Message.obtain(handler, MESSAGE_PROCESS_PENDING),
-            procesingDelay.toLong()
-        )
+
+        debouncer.executeDebouncing(debouncingTimeMs = procesingDelay.toLong()) {
+            processor.processPendingNotifications(pendingNotifications)
+            pendingNotifications.clear()
+        }
     }
 
     private fun removeNotificationSync(removedSbn: StatusBarNotification) {
@@ -167,44 +176,19 @@ class NotificationService : NotificationListenerService() {
         }
     }
 
-    private fun processPendingSync() {
-        processor.processPendingNotifications(pendingNotifications)
-        pendingNotifications.clear()
-    }
 
     private fun scheduleActiveListUpdate() {
-        handler.removeMessages(MESSAGE_UPDATE_ACTIVE_LIST)
-        handler.sendEmptyMessageDelayed(MESSAGE_UPDATE_ACTIVE_LIST, 250)
-    }
-
-    private fun updateActiveList() {
-        previousList = activeNotifications
-    }
-
-    private class NotificationRefreshHandler(service: NotificationService) : Handler(Looper.getMainLooper()) {
-        private val service: WeakReference<NotificationService>
-
-        init {
-            this.service = WeakReference(service)
-        }
-
-        override fun handleMessage(msg: Message) {
-            val listener = service.get() ?: return
-            when (msg.what) {
-                MESSAGE_PROCESS_PENDING -> listener.processPendingSync()
-                MESSAGE_ADD_NOTIFICATION -> listener.addNotificationSync(msg.obj as ProcessedNotification)
-                MESSAGE_REMOVE_NOTIFICATION -> listener.removeNotificationSync(msg.obj as StatusBarNotification)
-                MESSAGE_UPDATE_ACTIVE_LIST -> listener.updateActiveList()
-            }
+        previousListUpdateJob?.cancel()
+        previousListUpdateJob = coroutineScope.launch {
+            delay(MIN_NOTIFICATION_DELAY_MS)
+            previousList = activeNotifications
         }
     }
 
     companion object {
-        const val MESSAGE_PROCESS_PENDING = 0
-        const val MESSAGE_ADD_NOTIFICATION = 1
-        const val MESSAGE_REMOVE_NOTIFICATION = 2
-        const val MESSAGE_UPDATE_ACTIVE_LIST = 3
         @JvmField
         var active = false
     }
 }
+
+private const val MIN_NOTIFICATION_DELAY_MS = 250L

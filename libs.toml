@@ -36,6 +36,7 @@ google-material = { module = "com.google.android.material:material", version.ref
 google-wearableSupport = { module = "com.google.android.support:wearable", version.ref = "google.wearableLibrary" }
 google-wearableLibrary = { module = "com.google.android.wearable:wearable", version.ref = "google-wearableLibrary" }
 google-playServices-wearable = { module = "com.google.android.gms:play-services-wearable", version.ref = "google-playServices-wearable" }
+kotlinova-core = { module = "si.inova.kotlinova:core", version.ref = "kotlinova" }
 kotlinova-gradle = { module = "si.inova.kotlinova:gradle", version.ref = "kotlinova" }
 crashlytics = { module = "com.crashlytics.sdk.android:crashlytics", version.ref = "crashlytics" }
 fabricGradle = { module = "io.fabric.tools:gradle", version.ref = "fabricGradle" }
