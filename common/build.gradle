@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
 //noinspection GroovyMissingReturnStatement
 android {
@@ -28,4 +29,5 @@ dependencies {
 
     implementation(libs.androidx.annotation)
     implementation(libs.google.playServices.wearable)
+    implementation libs.kotlin.coroutines.playServices
 }
