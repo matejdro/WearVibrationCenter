@@ -6,8 +6,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.preference.Preference
-import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.wearable.Wearable
 import com.matejdro.wearutils.logging.LogRetrievalTask
 import com.matejdro.wearutils.preferences.legacy.CustomStoragePreferenceFragment
 import com.matejdro.wearutils.preferencesync.PreferencePusher.pushPreferences
@@ -15,9 +13,12 @@ import com.matejdro.wearvibrationcenter.R
 import com.matejdro.wearvibrationcenter.common.CommPaths
 import com.matejdro.wearvibrationcenter.ui.TitleUtils.TitledFragment
 import de.psdev.licensesdialog.LicensesDialog
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 open class GlobalSettingsFragment : CustomStoragePreferenceFragment(), TitledFragment {
-    private lateinit var googleApiClient: GoogleApiClient
 
     @Deprecated("Deprecated in Java")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,24 +50,22 @@ open class GlobalSettingsFragment : CustomStoragePreferenceFragment(), TitledFra
                 startActivity(intent)
                 true
             }
-        if (canTransmitSettingsAutomatically()) {
-            googleApiClient = GoogleApiClient.Builder(activity)
-                .addApi(Wearable.API)
-                .build()
-            googleApiClient.connect()
-        }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     @Deprecated("Deprecated in Java")
     override fun onStop() {
         super.onStop()
-        if (canTransmitSettingsAutomatically() && googleApiClient != null && googleApiClient.isConnected) {
-            pushPreferences(
-                googleApiClient,
-                preferenceManager.getSharedPreferences(),
-                CommPaths.PREFERENCES_PREFIX,
-                false
-            )
+        if (canTransmitSettingsAutomatically()) {
+            GlobalScope.launch(Dispatchers.Main) {
+                pushPreferences(
+                    requireNotNull(context).applicationContext,
+                    preferenceManager.getSharedPreferences(),
+                    CommPaths.PREFERENCES_PREFIX,
+                    false
+                )
+            }
+
         }
     }
 
