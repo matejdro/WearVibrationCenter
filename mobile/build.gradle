@@ -73,6 +73,7 @@ dependencies {
     implementation libs.androidx.preference
     implementation libs.androidx.lifecycle.viewModel
     implementation libs.dagger.hilt.runtime
+    implementation libs.kotlin.coroutines.playServices
     implementation libs.kotlinova.core
     implementation libs.google.material
     implementation libs.google.wearableLibrary

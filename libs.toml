@@ -12,6 +12,7 @@ crashlytics = "2.10.1@aar"
 dagger-hilt = "2.49"
 fabricGradle = "1.31.2"
 kotlin = "1.8.22"
+kotlin-coroutines = "1.7.3"
 kotlinova = "3.0.0-alpha20"
 google-material = "1.10.0"
 google-wearableLibrary = "2.9.0"
@@ -41,5 +42,6 @@ kotlinova-gradle = { module = "si.inova.kotlinova:gradle", version.ref = "kotlin
 crashlytics = { module = "com.crashlytics.sdk.android:crashlytics", version.ref = "crashlytics" }
 fabricGradle = { module = "io.fabric.tools:gradle", version.ref = "fabricGradle" }
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-coroutines-playServices = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlin-coroutines" }
 licensesDialog = { module = "de.psdev.licensesdialog:licensesdialog", version.ref = "licensesDialog" }
 versionsGradle = { module = "com.github.ben-manes:gradle-versions-plugin", version.ref = "versionsGradle" }

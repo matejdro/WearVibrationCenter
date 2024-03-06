@@ -5,46 +5,52 @@ import android.content.Context
 import android.content.Intent
 import android.os.Parcelable
 import android.preference.PreferenceManager
+import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.wearable.Asset
+import com.google.android.gms.wearable.DataClient
+import com.google.android.gms.wearable.MessageClient
+import com.google.android.gms.wearable.NodeClient
 import com.google.android.gms.wearable.PutDataRequest
 import com.google.android.gms.wearable.Wearable
+import com.matejdro.wearutils.coroutines.await
 import com.matejdro.wearutils.messages.ParcelPacker
+import com.matejdro.wearutils.messages.getNearestNodeId
 import com.matejdro.wearutils.messages.getOtherNodeId
 import com.matejdro.wearutils.preferencesync.PreferencePusher.pushPreferences
 import com.matejdro.wearvibrationcenter.common.AlarmCommand
 import com.matejdro.wearvibrationcenter.common.CommPaths
 import com.matejdro.wearvibrationcenter.common.LiteAlarmCommand
 import com.matejdro.wearvibrationcenter.common.VibrationCommand
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.runBlocking
 
 class WatchCommander : IntentService("WatchCommander") {
-    private lateinit var googleApiClient: GoogleApiClient
+    private lateinit var dataClient: DataClient
+    private lateinit var messageClient: MessageClient
+    private lateinit var nodeClient: NodeClient
 
     @Deprecated("Deprecated in Java")
     override fun onCreate() {
         super.onCreate()
-        googleApiClient = GoogleApiClient.Builder(this)
-            .addApi(Wearable.API)
-            .build()
-        googleApiClient.connect()
+
+        dataClient = Wearable.getDataClient(this)
+        messageClient = Wearable.getMessageClient(this)
+        nodeClient = Wearable.getNodeClient(this)
     }
 
     @Deprecated("Deprecated in Java")
-    override fun onDestroy() {
-        googleApiClient.disconnect()
-        super.onDestroy()
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onHandleIntent(intent: Intent?) {
+    override fun onHandleIntent(intent: Intent?) = runBlocking {
         if (intent == null) {
-            return
+            return@runBlocking
         }
 
         if (!ensurePlayServicesConnection()) {
-            return
+            return@runBlocking
         }
+
         when (intent.action) {
             ACTION_VIBRATE_COMMAND -> vibrationCommand(intent)
             ACTION_ALARM_COMMAND -> alarmCommand(intent)
@@ -52,17 +58,16 @@ class WatchCommander : IntentService("WatchCommander") {
         }
     }
 
-    private fun vibrationCommand(intent: Intent) {
+    private suspend fun vibrationCommand(intent: Intent) {
         val commandData = intent.getParcelableExtra<Parcelable>(KEY_COMMAND_DATA) ?: return
-        val watchId = getOtherNodeId(googleApiClient) ?: return
-        Wearable.MessageApi.sendMessage(
-            googleApiClient, watchId, CommPaths.COMMAND_VIBRATE, ParcelPacker.getData(
-                commandData
-            )
-        ).await()
+        val watchId = nodeClient.getNearestNodeId() ?: return
+
+        messageClient.sendMessage(watchId, CommPaths.COMMAND_VIBRATE, ParcelPacker.getData(
+            commandData
+        )).await()
     }
 
-    private fun alarmCommand(intent: Intent) {
+    private suspend fun alarmCommand(intent: Intent) {
         val commandData = intent.getParcelableExtra<AlarmCommand>(KEY_COMMAND_DATA)
         val liteAlarmCommand = LiteAlarmCommand(commandData)
         val putDataRequest = PutDataRequest.create(CommPaths.COMMAND_ALARM)
@@ -82,23 +87,24 @@ class WatchCommander : IntentService("WatchCommander") {
             )
         }
         putDataRequest.setUrgent()
-        Wearable.DataApi.putDataItem(googleApiClient, putDataRequest).await()
+        dataClient.putDataItem(putDataRequest).await()
     }
 
-    private fun transmitGlobalSettings() {
+    private suspend fun transmitGlobalSettings() {
         val globalSettings = PreferenceManager.getDefaultSharedPreferences(this)
         pushPreferences(
-            googleApiClient,
+            this,
             globalSettings,
             CommPaths.PREFERENCES_PREFIX,
             false
-        ).await()
+        )
     }
 
     private fun ensurePlayServicesConnection(): Boolean {
-        val result = googleApiClient.blockingConnect()
-        if (!result.isSuccess) {
-            GoogleApiAvailability.getInstance().showErrorNotification(this, result)
+        val apiAvailability = GoogleApiAvailability.getInstance()
+        val available = apiAvailability.isGooglePlayServicesAvailable(this)
+        if (available != ConnectionResult.SUCCESS) {
+            GoogleApiAvailability.getInstance().showErrorNotification(this, available)
             return false
         }
         return true
