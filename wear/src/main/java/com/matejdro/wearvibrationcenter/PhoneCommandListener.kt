@@ -5,7 +5,8 @@ import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.PowerManager
 import android.os.Vibrator
-import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.tasks.Tasks
+import com.google.android.gms.wearable.DataClient
 import com.google.android.gms.wearable.DataEvent
 import com.google.android.gms.wearable.DataEventBuffer
 import com.google.android.gms.wearable.DataItemAsset
@@ -43,7 +44,8 @@ class PhoneCommandListener : WearableListenerService() {
     }
 
     override fun onDataChanged(dataEventBuffer: DataEventBuffer) {
-        var googleApiClient: GoogleApiClient? = null
+        val dataClient = Wearable.getDataClient(this)
+
         for (event in dataEventBuffer) {
             if (event.type != DataEvent.TYPE_CHANGED) {
                 continue
@@ -54,22 +56,15 @@ class PhoneCommandListener : WearableListenerService() {
                 val liteAlarmCommand = ParcelPacker.getParcelable(
                     data, LiteAlarmCommand.CREATOR
                 )
-                if (googleApiClient == null) {
-                    googleApiClient = GoogleApiClient.Builder(this)
-                        .addApi(Wearable.API)
-                        .build()
-                    googleApiClient.blockingConnect()
-                }
                 val iconData =
-                    getByteArrayAsset(dataItem.assets[CommPaths.ASSET_ICON], googleApiClient)
+                    getByteArrayAsset(dataItem.assets[CommPaths.ASSET_ICON], dataClient)
                 val backgroundData =
-                    getByteArrayAsset(dataItem.assets[CommPaths.ASSET_BACKGROUND], googleApiClient)
+                    getByteArrayAsset(dataItem.assets[CommPaths.ASSET_BACKGROUND], dataClient)
                 val alarmCommand = AlarmCommand(liteAlarmCommand, backgroundData, iconData)
                 alarm(alarmCommand)
-                Wearable.DataApi.deleteDataItems(googleApiClient, dataItem.uri).await()
+                dataClient.deleteDataItems(dataItem.uri)
             }
         }
-        googleApiClient?.disconnect()
     }
 
     private fun vibrate(vibrationCommand: VibrationCommand) {
@@ -127,13 +122,13 @@ class PhoneCommandListener : WearableListenerService() {
 
     private fun getByteArrayAsset(
         asset: DataItemAsset?,
-        connectedApiClient: GoogleApiClient
+        dataClient: DataClient
     ): ByteArray? {
         if (asset == null) {
             return null
         }
         val inputStream =
-            Wearable.DataApi.getFdForAsset(connectedApiClient, asset).await().inputStream
+            Tasks.await(dataClient.getFdForAsset(asset)).inputStream
         val data = readFully(inputStream)
         if (data != null) {
             try {
