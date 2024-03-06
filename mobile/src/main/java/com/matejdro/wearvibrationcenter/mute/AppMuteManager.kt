@@ -6,16 +6,10 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
-import android.os.Bundle
 import android.os.Parcelable
 import android.service.notification.NotificationListenerService
 import android.util.LruCache
 import androidx.core.content.res.ResourcesCompat
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.wearable.MessageApi
-import com.google.android.gms.wearable.MessageApi.MessageListener
 import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.Wearable

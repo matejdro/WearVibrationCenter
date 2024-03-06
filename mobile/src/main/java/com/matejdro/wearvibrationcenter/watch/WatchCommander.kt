@@ -7,7 +7,6 @@ import android.os.Parcelable
 import android.preference.PreferenceManager
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.wearable.Asset
 import com.google.android.gms.wearable.DataClient
 import com.google.android.gms.wearable.MessageClient
@@ -16,14 +15,11 @@ import com.google.android.gms.wearable.PutDataRequest
 import com.google.android.gms.wearable.Wearable
 import com.matejdro.wearutils.messages.ParcelPacker
 import com.matejdro.wearutils.messages.getNearestNodeId
-import com.matejdro.wearutils.messages.getOtherNodeId
 import com.matejdro.wearutils.preferencesync.PreferencePusher.pushPreferences
 import com.matejdro.wearvibrationcenter.common.AlarmCommand
 import com.matejdro.wearvibrationcenter.common.CommPaths
 import com.matejdro.wearvibrationcenter.common.LiteAlarmCommand
 import com.matejdro.wearvibrationcenter.common.VibrationCommand
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 
