@@ -1,377 +1,330 @@
-package com.matejdro.wearvibrationcenter.mutepicker;
+package com.matejdro.wearvibrationcenter.mutepicker
 
-import android.app.Activity;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import android.support.wearable.activity.ConfirmationActivity;
-import android.support.wearable.view.DefaultOffsettingHelper;
-import android.support.wearable.view.WearableRecyclerView;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
+import android.app.Activity
+import android.content.Intent
+import android.content.SharedPreferences
+import android.net.Uri
+import android.os.AsyncTask
+import android.os.Bundle
+import android.preference.PreferenceManager
+import android.support.wearable.activity.ConfirmationActivity
+import android.support.wearable.view.DefaultOffsettingHelper
+import android.support.wearable.view.WearableRecyclerView
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.ProgressBar
+import android.widget.TextView
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.wearable.MessageApi
+import com.google.android.gms.wearable.MessageEvent
+import com.google.android.gms.wearable.Wearable
+import com.matejdro.wearremotelist.parcelables.CompressedParcelableBitmap
+import com.matejdro.wearremotelist.parcelables.StringParcelableWraper
+import com.matejdro.wearremotelist.receiverside.RemoteList
+import com.matejdro.wearremotelist.receiverside.RemoteListListener
+import com.matejdro.wearremotelist.receiverside.RemoteListManager
+import com.matejdro.wearremotelist.receiverside.conn.WatchSingleConnection
+import com.matejdro.wearutils.messages.ParcelPacker
+import com.matejdro.wearutils.messages.SingleMessageReceiver
+import com.matejdro.wearutils.messages.getOtherNodeId
+import com.matejdro.wearutils.preferences.definition.Preferences
+import com.matejdro.wearvibrationcenter.R
+import com.matejdro.wearvibrationcenter.common.AppMuteCommand
+import com.matejdro.wearvibrationcenter.common.CommPaths
+import com.matejdro.wearvibrationcenter.preferences.GlobalWatchPreferences
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
+import kotlin.math.abs
+import kotlin.math.min
 
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.wearable.MessageApi;
-import com.google.android.gms.wearable.MessageEvent;
-import com.google.android.gms.wearable.Wearable;
-import com.matejdro.wearremotelist.parcelables.CompressedParcelableBitmap;
-import com.matejdro.wearremotelist.parcelables.StringParcelableWraper;
-import com.matejdro.wearremotelist.receiverside.RemoteList;
-import com.matejdro.wearremotelist.receiverside.RemoteListListener;
-import com.matejdro.wearremotelist.receiverside.RemoteListManager;
-import com.matejdro.wearremotelist.receiverside.conn.WatchSingleConnection;
-import com.matejdro.wearutils.messages.MessagingUtils;
-import com.matejdro.wearutils.messages.ParcelPacker;
-import com.matejdro.wearutils.messages.SingleMessageReceiver;
-import com.matejdro.wearutils.preferences.definition.Preferences;
-import com.matejdro.wearvibrationcenter.R;
-import com.matejdro.wearvibrationcenter.common.AppMuteCommand;
-import com.matejdro.wearvibrationcenter.common.CommPaths;
-import com.matejdro.wearvibrationcenter.preferences.GlobalWatchPreferences;
-
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-public class AppMuteActivity extends Activity implements GoogleApiClient.ConnectionCallbacks, RemoteListListener {
-    private static final int CONFIRMATION_REQUEST_CODE = 0;
-
-    private WearableRecyclerView recycler;
-    private ProgressBar progressBar;
-    private TextView emptyNotice;
-
-    private GoogleApiClient googleApiClient;
-    private WatchSingleConnection listConnection;
-    private SharedPreferences preferences;
-
-    private RemoteList<CompressedParcelableBitmap> imageList;
-    private RemoteList<StringParcelableWraper> textList;
-
-    private ListAdapter adapter;
-    private int positionPendingConfirmation;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        setContentView(R.layout.activity_app_mute);
-
-        googleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Wearable.API)
-                .addConnectionCallbacks(this)
-                .build();
-
-        recycler = (WearableRecyclerView) findViewById(R.id.recycler);
-        progressBar = (ProgressBar) findViewById(R.id.progress);
-        emptyNotice = (TextView) findViewById(R.id.empty_notice);
-
-        adapter = new ListAdapter();
-        recycler.setOffsettingHelper(new ListOffsettingHelper());
-        recycler.setItemAnimator(new DefaultItemAnimatorNoChange());
-        recycler.setCenterEdgeItems(true);
-        recycler.setAdapter(adapter);
-
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+class AppMuteActivity : Activity(), GoogleApiClient.ConnectionCallbacks, RemoteListListener {
+    private lateinit var recycler: WearableRecyclerView
+    private lateinit var progressBar: ProgressBar
+    private lateinit var emptyNotice: TextView
+    private lateinit var googleApiClient: GoogleApiClient
+    private lateinit var listConnection: WatchSingleConnection
+    private lateinit var preferences: SharedPreferences
+    private lateinit var imageList: RemoteList<CompressedParcelableBitmap>
+    private lateinit var textList: RemoteList<StringParcelableWraper>
+    private lateinit var adapter: ListAdapter
+    private var positionPendingConfirmation = 0
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_app_mute)
+        googleApiClient = GoogleApiClient.Builder(this)
+            .addApi(Wearable.API)
+            .addConnectionCallbacks(this)
+            .build()
+        recycler = findViewById<View>(R.id.recycler) as WearableRecyclerView
+        progressBar = findViewById<View>(R.id.progress) as ProgressBar
+        emptyNotice = findViewById<View>(R.id.empty_notice) as TextView
+        adapter = ListAdapter()
+        recycler.offsettingHelper = ListOffsettingHelper()
+        recycler.setItemAnimator(DefaultItemAnimatorNoChange())
+        recycler.centerEdgeItems = true
+        recycler.setAdapter(adapter)
+        preferences = PreferenceManager.getDefaultSharedPreferences(this)
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        showLoading();
-        googleApiClient.connect();
+    override fun onStart() {
+        super.onStart()
+        showLoading()
+        googleApiClient.connect()
     }
 
-    @Override
-    protected void onStop() {
-        listConnection.disconnect();
-        googleApiClient.disconnect();
-
-        super.onStop();
+    override fun onStop() {
+        listConnection.disconnect()
+        googleApiClient.disconnect()
+        super.onStop()
     }
 
-    private void showLoading() {
-        progressBar.setVisibility(View.VISIBLE);
-        recycler.setVisibility(View.GONE);
-        emptyNotice.setVisibility(View.GONE);
+    private fun showLoading() {
+        progressBar.visibility = View.VISIBLE
+        recycler.visibility = View.GONE
+        emptyNotice.visibility = View.GONE
     }
 
-    private void showList() {
-        progressBar.setVisibility(View.GONE);
-        recycler.setVisibility(View.VISIBLE);
-        emptyNotice.setVisibility(View.GONE);
+    private fun showList() {
+        progressBar.visibility = View.GONE
+        recycler.visibility = View.VISIBLE
+        emptyNotice.visibility = View.GONE
     }
 
-    private void showEmptyNotice() {
-        progressBar.setVisibility(View.GONE);
-        recycler.setVisibility(View.GONE);
-        emptyNotice.setVisibility(View.VISIBLE);
+    private fun showEmptyNotice() {
+        progressBar.visibility = View.GONE
+        recycler.visibility = View.GONE
+        emptyNotice.visibility = View.VISIBLE
     }
 
-
-    private void itemSelected(int position)
-    {
-        if (Preferences.getBoolean(preferences, GlobalWatchPreferences.DO_NOT_ASK_APP_MUTE_CONFIRM)) {
-            muteApp(position);
-            return;
+    private fun itemSelected(position: Int) {
+        if (Preferences.getBoolean(
+                preferences,
+                GlobalWatchPreferences.DO_NOT_ASK_APP_MUTE_CONFIRM
+            )
+        ) {
+            muteApp(position)
+            return
         }
-
-        positionPendingConfirmation = position;
-
-        Intent confirmationIntent = new Intent(this, AppMuteConfirmationActivity.class);
-        confirmationIntent.putExtra(AppMuteConfirmationActivity.EXTRA_APP_NAME, textList.get(position).getString());
-
-        startActivityForResult(confirmationIntent, CONFIRMATION_REQUEST_CODE);
+        positionPendingConfirmation = position
+        val confirmationIntent = Intent(this, AppMuteConfirmationActivity::class.java)
+        confirmationIntent.putExtra(
+            AppMuteConfirmationActivity.EXTRA_APP_NAME,
+            textList[position].string
+        )
+        startActivityForResult(confirmationIntent, CONFIRMATION_REQUEST_CODE)
     }
 
-    private void muteApp(int position) {
-        new MuteExecutor(position).execute((Void) null);
+    private fun muteApp(position: Int) {
+        MuteExecutor(position).execute(null as Void?)
     }
 
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        listConnection = new WatchSingleConnection(googleApiClient);
-        RemoteListManager listManager = new RemoteListManager(listConnection, this);
-
-        textList = listManager.createRemoteList(CommPaths.LIST_ACTIVE_APPS_NAMES, StringParcelableWraper.CREATOR, 1000, 40);
-        imageList = listManager.createRemoteList(CommPaths.LIST_ACTIVE_APPS_ICONS, CompressedParcelableBitmap.CREATOR, 200, 5);
-        textList.setPriority(1);
-        imageList.setPriority(0);
-
+    override fun onConnected(bundle: Bundle?) {
+        listConnection = WatchSingleConnection(googleApiClient)
+        val listManager = RemoteListManager(listConnection, this)
+        textList = listManager.createRemoteList(
+            CommPaths.LIST_ACTIVE_APPS_NAMES,
+            StringParcelableWraper.CREATOR,
+            1000,
+            40
+        )
+        imageList = listManager.createRemoteList(
+            CommPaths.LIST_ACTIVE_APPS_ICONS,
+            CompressedParcelableBitmap.CREATOR,
+            200,
+            5
+        )
+        textList.setPriority(1)
+        imageList.setPriority(0)
     }
 
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onListSizeChanged(String listPath) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (textList.size() == 0) {
-                    showEmptyNotice();
-                } else {
-                    showList();
-                    adapter.notifyDataSetChanged();
-                }
-            }
-        });
-    }
-
-    @Override
-    public void newEntriesTransferred(String listPath, final int from, final int to) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                adapter.notifyItemRangeChanged(from, to - from + 1);
-            }
-        });
-    }
-
-    @Override
-    public void onError(String listPath, int errorCode) {
-
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == CONFIRMATION_REQUEST_CODE && resultCode == RESULT_OK) {
-            boolean doNotAskAgain = data.getBooleanExtra(AppMuteConfirmationActivity.EXTRA_DO_NOT_ASK_AGAIN, false);
-            if (doNotAskAgain) {
-                SharedPreferences.Editor editor = preferences.edit();
-                Preferences.putBoolean(editor, GlobalWatchPreferences.DO_NOT_ASK_APP_MUTE_CONFIRM, true);
-                editor.apply();
-            }
-
-            muteApp(positionPendingConfirmation);
-        }
-    }
-
-    private class MuteExecutor extends AsyncTask<Void, Void, Boolean>
-    {
-        private final int appIndex;
-
-        public MuteExecutor(int appIndex) {
-            this.appIndex = appIndex;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            progressBar.setVisibility(View.VISIBLE);
-            recycler.setVisibility(View.GONE);
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            GoogleApiClient googleApiClient = new GoogleApiClient.Builder(AppMuteActivity.this)
-                    .addApi(Wearable.API)
-                    .build();
-
-            googleApiClient.blockingConnect();
-
-            SingleMessageReceiver ackReceiver = new SingleMessageReceiver(googleApiClient,
-                    Uri.parse("wear://*" + CommPaths.COMMAND_RECEIVAL_ACKNOWLEDGMENT),
-                    MessageApi.FILTER_LITERAL);
-
-            AppMuteCommand command = new AppMuteCommand(appIndex);
-            Wearable.MessageApi.sendMessage(googleApiClient,
-                    MessagingUtils.getOtherNodeId(googleApiClient),
-                    CommPaths.COMMAND_APP_MUTE,
-                    ParcelPacker.getData(command));
-
-            MessageEvent receivedMessage;
-            try {
-                receivedMessage = ackReceiver.get(2, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                return false;
-            } catch (TimeoutException e) {
-                return false;
-            }
-
-            googleApiClient.disconnect();
-
-            return receivedMessage != null;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            Intent intent = new Intent(AppMuteActivity.this, ConfirmationActivity.class);
-
-            if (success) {
-                intent.putExtra(ConfirmationActivity.EXTRA_ANIMATION_TYPE,
-                        ConfirmationActivity.SUCCESS_ANIMATION);
-                intent.putExtra(ConfirmationActivity.EXTRA_MESSAGE,
-                        getString(R.string.app_muted));
+    override fun onConnectionSuspended(i: Int) {}
+    override fun onListSizeChanged(listPath: String) {
+        runOnUiThread {
+            if (textList.size() == 0) {
+                showEmptyNotice()
             } else {
-                intent.putExtra(ConfirmationActivity.EXTRA_ANIMATION_TYPE,
-                        ConfirmationActivity.FAILURE_ANIMATION);
-                intent.putExtra(ConfirmationActivity.EXTRA_MESSAGE,
-                        getString(R.string.timed_mute_fail));
-
+                showList()
+                adapter.notifyDataSetChanged()
             }
-
-            startActivity(intent);
-            finish();
         }
     }
 
-    private class ListAdapter extends WearableRecyclerView.Adapter<ListViewHolder> {
+    override fun newEntriesTransferred(listPath: String, from: Int, to: Int) {
+        runOnUiThread { adapter.notifyItemRangeChanged(from, to - from + 1) }
+    }
 
-        public ListAdapter() {
-        }
-
-        @Override
-        public ListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            ViewGroup view = (ViewGroup) getLayoutInflater().inflate(R.layout.item_mute_app, parent, false);
-
-            ListViewHolder holder = new ListViewHolder(view);
-            holder.textView = (TextView) view.findViewById(android.R.id.text1);
-            holder.imageView = (ImageView) view.findViewById(R.id.image);
-
-            view.setTag(holder);
-
-            return holder;
-        }
-
-        @Override
-        public void onBindViewHolder(ListViewHolder holder, int position) {
-            StringParcelableWraper text = textList.get(position);
-
-            if (text == null)
-            {
-                holder.textView.setText(null);
-                holder.imageView.setImageDrawable(null);
+    override fun onError(listPath: String, errorCode: Int) {}
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == CONFIRMATION_REQUEST_CODE && resultCode == RESULT_OK) {
+            val doNotAskAgain =
+                data.getBooleanExtra(AppMuteConfirmationActivity.EXTRA_DO_NOT_ASK_AGAIN, false)
+            if (doNotAskAgain) {
+                val editor = preferences.edit()
+                Preferences.putBoolean(
+                    editor,
+                    GlobalWatchPreferences.DO_NOT_ASK_APP_MUTE_CONFIRM,
+                    true
+                )
+                editor.apply()
             }
-            else
-            {
-                holder.textView.setText(text.getString());
+            muteApp(positionPendingConfirmation)
+        }
+    }
+
+    private inner class MuteExecutor(private val appIndex: Int) :
+        AsyncTask<Void?, Void?, Boolean>() {
+        @Deprecated("Deprecated in Java")
+        override fun onPreExecute() {
+            progressBar.visibility = View.VISIBLE
+            recycler.visibility = View.GONE
+        }
+
+        @Deprecated("Deprecated in Java")
+        protected override fun doInBackground(vararg params: Void?): Boolean? {
+            val googleApiClient = GoogleApiClient.Builder(this@AppMuteActivity)
+                .addApi(Wearable.API)
+                .build()
+            googleApiClient.blockingConnect()
+            val ackReceiver = SingleMessageReceiver(
+                googleApiClient,
+                Uri.parse("wear://*" + CommPaths.COMMAND_RECEIVAL_ACKNOWLEDGMENT),
+                MessageApi.FILTER_LITERAL
+            )
+            val command = AppMuteCommand(appIndex)
+            Wearable.MessageApi.sendMessage(
+                googleApiClient,
+                getOtherNodeId(googleApiClient)!!,
+                CommPaths.COMMAND_APP_MUTE,
+                ParcelPacker.getData(command)
+            )
+            val receivedMessage: MessageEvent?
+            receivedMessage = try {
+                ackReceiver[2, TimeUnit.SECONDS]
+            } catch (e: InterruptedException) {
+                return false
+            } catch (e: TimeoutException) {
+                return false
+            }
+            googleApiClient.disconnect()
+            return receivedMessage != null
+        }
+
+        @Deprecated("Deprecated in Java")
+        override fun onPostExecute(success: Boolean) {
+            val intent = Intent(this@AppMuteActivity, ConfirmationActivity::class.java)
+            if (success) {
+                intent.putExtra(
+                    ConfirmationActivity.EXTRA_ANIMATION_TYPE,
+                    ConfirmationActivity.SUCCESS_ANIMATION
+                )
+                intent.putExtra(
+                    ConfirmationActivity.EXTRA_MESSAGE,
+                    getString(R.string.app_muted)
+                )
+            } else {
+                intent.putExtra(
+                    ConfirmationActivity.EXTRA_ANIMATION_TYPE,
+                    ConfirmationActivity.FAILURE_ANIMATION
+                )
+                intent.putExtra(
+                    ConfirmationActivity.EXTRA_MESSAGE,
+                    getString(R.string.timed_mute_fail)
+                )
+            }
+            startActivity(intent)
+            finish()
+        }
+    }
+
+    private inner class ListAdapter : RecyclerView.Adapter<ListViewHolder>() {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListViewHolder {
+            val view = layoutInflater.inflate(R.layout.item_mute_app, parent, false) as ViewGroup
+            val holder: ListViewHolder = ListViewHolder(view)
+            holder.textView = view.findViewById<View>(android.R.id.text1) as TextView
+            holder.imageView = view.findViewById<View>(R.id.image) as ImageView
+            view.tag = holder
+            return holder
+        }
+
+        override fun onBindViewHolder(holder: ListViewHolder, position: Int) {
+            val text = textList[position]
+            if (text == null) {
+                holder.textView.setText(null)
+                holder.imageView.setImageDrawable(null)
+            } else {
+                holder.textView.text = text.string
 
                 //Make sure there is plenty of text items loaded around in case user scrolls fast.
-                textList.fillAround(position, 20);
-
-                CompressedParcelableBitmap image = imageList.get(position);
-                if (image == null)
-                    holder.imageView.setImageDrawable(null);
-                else
-                    holder.imageView.setImageBitmap(image.getBitmap());
+                textList.fillAround(position, 20)
+                val image = imageList[position]
+                if (image == null) holder.imageView.setImageDrawable(null) else holder.imageView.setImageBitmap(
+                    image.bitmap
+                )
             }
         }
 
-        @Override
-        public int getItemCount() {
-            if (imageList == null || textList == null)
-                return 0;
-
-            return Math.min(textList.size(), imageList.size());
+        override fun getItemCount(): Int {
+            return min(
+                textList.size().toDouble(),
+                imageList.size().toDouble()
+            ).toInt()
         }
     }
 
-    private class ListOffsettingHelper extends DefaultOffsettingHelper {
+    private inner class ListOffsettingHelper internal constructor() : DefaultOffsettingHelper() {
+        private val roundScreen: Boolean
 
-        private final boolean roundScreen;
-
-        private ListOffsettingHelper() {
-            roundScreen = getResources().getConfiguration().isScreenRound();
+        init {
+            roundScreen = resources.configuration.isScreenRound
         }
 
-
-        @Override
-        public void updateChild(View child, WearableRecyclerView parent) {
-            super.updateChild(child, parent);
+        override fun updateChild(child: View, parent: WearableRecyclerView) {
+            super.updateChild(child, parent)
 
             // Figure out % progress from top to bottom
-            float centerOffset = ((float) child.getHeight() / 2.0f) /  (float) recycler.getHeight();
-            float yRelativeToCenterOffset = (child.getY() / recycler.getHeight()) + centerOffset;
+            val centerOffset = child.height.toFloat() / 2.0f / recycler.height.toFloat()
+            val yRelativeToCenterOffset = child.y / recycler.height + centerOffset
 
             // Normalize for center
-            float progressToCenter = Math.abs(0.5f - yRelativeToCenterOffset);
-            progressToCenter = Math.min(0.5f, progressToCenter);
-
-            ListViewHolder holder = (ListViewHolder) child.getTag();
-
-            float scale = 1 - progressToCenter;
-            child.setAlpha(scale);
-
+            var progressToCenter = abs((0.5f - yRelativeToCenterOffset).toDouble())
+                .toFloat()
+            progressToCenter = min(0.5, progressToCenter.toDouble()).toFloat()
+            val holder = child.tag as ListViewHolder
+            val scale = (1 - progressToCenter).toFloat()
+            child.setAlpha(scale)
             if (roundScreen) {
-                holder.imageView.setScaleX(scale);
-                holder.imageView.setScaleY(scale);
+                holder.imageView.scaleX = scale
+                holder.imageView.scaleY = scale
             }
         }
     }
 
-    private class ListViewHolder extends WearableRecyclerView.ViewHolder implements View.OnClickListener {
+    private inner class ListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView),
+        View.OnClickListener {
+        lateinit var textView: TextView
+        lateinit var imageView: ImageView
 
-        public ListViewHolder(View itemView) {
-            super(itemView);
-
-            itemView.setOnClickListener(this);
+        init {
+            itemView.setOnClickListener(this)
         }
 
-        public TextView textView;
-        public ImageView imageView;
-
-        @Override
-        public void onClick(View v) {
-            itemSelected(getAdapterPosition());
+        override fun onClick(v: View) {
+            itemSelected(adapterPosition)
         }
     }
 
-    private static class DefaultItemAnimatorNoChange extends DefaultItemAnimator {
-        public DefaultItemAnimatorNoChange() {
+    private class DefaultItemAnimatorNoChange : DefaultItemAnimator() {
+        init {
             // Item change animation causes glitches while scrolling. Disable.
-            setSupportsChangeAnimations(false);
+            supportsChangeAnimations = false
         }
     }
 
+    companion object {
+        private const val CONFIRMATION_REQUEST_CODE = 0
+    }
 }
