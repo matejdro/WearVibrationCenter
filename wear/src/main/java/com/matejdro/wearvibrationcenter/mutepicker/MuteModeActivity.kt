@@ -3,16 +3,12 @@ package com.matejdro.wearvibrationcenter.mutepicker
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.common.api.ResultCallback
-import com.google.android.gms.wearable.CapabilityApi.GetCapabilityResult
 import com.matejdro.wearutils.companionnotice.WearCompanionWatchActivity
 import com.matejdro.wearvibrationcenter.R
 import com.matejdro.wearvibrationcenter.common.CommPaths
 import com.matejdro.wearvibrationcenter.mutepicker.AppMuteActivity
 
-class MuteModeActivity : WearCompanionWatchActivity(), GoogleApiClient.ConnectionCallbacks,
-    ResultCallback<GetCapabilityResult?> {
+class MuteModeActivity : WearCompanionWatchActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_mute_mode)
