@@ -3,6 +3,7 @@ package com.matejdro.wearvibrationcenter.mute
 import android.annotation.TargetApi
 import android.app.AlarmManager
 import android.app.Notification
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -11,15 +12,10 @@ import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
 import android.service.notification.NotificationListenerService
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.wearable.MessageApi
-import com.google.android.gms.wearable.MessageApi.MessageListener
+import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.Wearable
 import com.matejdro.wearutils.messages.ParcelPacker
@@ -38,9 +34,8 @@ class TimedMuteManager @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val notificationService: NotificationListenerService,
     preferences: SharedPreferences
-) : GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-    MessageListener {
-    private val googleApiClient: GoogleApiClient
+) : MessageClient.OnMessageReceivedListener {
+    private val messageClient: MessageClient
     private val unmuteReceiver: BroadcastReceiver
     private val preferences: SharedPreferences
     private val alarmManager: AlarmManager
@@ -51,13 +46,10 @@ class TimedMuteManager @Inject constructor(
 
     init {
         this.preferences = preferences
-        googleApiClient = GoogleApiClient.Builder(
-            notificationService
-        ).addApi(Wearable.API).addConnectionCallbacks(this).addOnConnectionFailedListener(this)
-            .build()
-        googleApiClient.connect()
+        messageClient = Wearable.getMessageClient(context)
         unmuteReceiver = UnmuteReceiver()
-        notificationService.registerReceiver(unmuteReceiver, IntentFilter(ACTON_UNMUTE))
+        notificationService.registerReceiver(unmuteReceiver, IntentFilter(ACTON_UNMUTE),
+            Context.RECEIVER_NOT_EXPORTED)
         alarmManager = notificationService.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         unmutePendingIntent = PendingIntent.getBroadcast(
             notificationService,
@@ -65,14 +57,16 @@ class TimedMuteManager @Inject constructor(
             Intent(ACTON_UNMUTE),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+
+        messageClient.addListener(
+            this,
+            Uri.parse("wear://*" + CommPaths.COMMAND_TIMED_MUTE),
+            MessageClient.FILTER_LITERAL
+        )
     }
 
     fun onDestroy() {
         unmute()
-        if (googleApiClient.isConnected) {
-            Wearable.MessageApi.removeListener(googleApiClient, this)
-            googleApiClient.disconnect()
-        }
         context.unregisterReceiver(unmuteReceiver)
         alarmManager.cancel(unmutePendingIntent)
     }
@@ -87,7 +81,7 @@ class TimedMuteManager @Inject constructor(
             context,
             VibrationCenterChannels.CHANNEL_TEMPORARY_MUTE
         ).setSmallIcon(R.drawable.ic_notification)
-            .setPriority(Notification.PRIORITY_MIN)
+            .setPriority(NotificationManager.IMPORTANCE_MIN)
             .setDeleteIntent(unmutePendingIntent)
             .setContentTitle(context.getString(R.string.vibrations_muted_notification_title))
             .setContentText(context.getString(R.string.vibrations_muted_notification_explanation))
@@ -171,32 +165,16 @@ class TimedMuteManager @Inject constructor(
         if (messageEvent.path == CommPaths.COMMAND_TIMED_MUTE) {
             val timedMuteCommand =
                 ParcelPacker.getParcelable(messageEvent.data, TimedMuteCommand.CREATOR)
-            Wearable.MessageApi.sendMessage(
-                googleApiClient,
+            messageClient.sendMessage(
                 messageEvent.sourceNodeId,
                 CommPaths.COMMAND_RECEIVAL_ACKNOWLEDGMENT,
-                byteArrayOf()
+                null
             )
+
             mute(timedMuteCommand)
         }
     }
 
-    override fun onConnected(bundle: Bundle?) {
-        Wearable.MessageApi.addListener(
-            googleApiClient,
-            this,
-            Uri.parse("wear://*" + CommPaths.COMMAND_TIMED_MUTE),
-            MessageApi.FILTER_LITERAL
-        )
-    }
-
-    override fun onConnectionFailed(connectionResult: ConnectionResult) {
-        GoogleApiAvailability.getInstance().showErrorNotification(
-            context, connectionResult
-        )
-    }
-
-    override fun onConnectionSuspended(i: Int) {}
     private inner class UnmuteReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             unmute()
