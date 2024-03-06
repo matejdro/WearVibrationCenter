@@ -16,6 +16,7 @@ import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.wearable.MessageApi
 import com.google.android.gms.wearable.MessageApi.MessageListener
+import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.Wearable
 import com.matejdro.wearremotelist.parcelables.CompressedParcelableBitmap
@@ -28,6 +29,8 @@ import com.matejdro.wearvibrationcenter.common.AppMuteCommand
 import com.matejdro.wearvibrationcenter.common.CommPaths
 import com.matejdro.wearvibrationcenter.notification.ProcessedNotification
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 import timber.log.Timber
 import java.util.Collections
 import javax.inject.Inject
@@ -35,9 +38,10 @@ import javax.inject.Inject
 class AppMuteManager @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val notificationService: NotificationListenerService
-) : GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-    RemoteListProvider, MessageListener {
-    private val googleApiClient: GoogleApiClient
+) : RemoteListProvider, MessageClient.OnMessageReceivedListener {
+    private val coroutineScope = MainScope()
+
+    private val messageClient: MessageClient
     private lateinit var listTransmitter: PlayServicesConnectionToReceiver
     private val mutedApps = Collections.synchronizedSet(HashSet<String>())
     private val appList: MutableList<InstalledApp> = ArrayList()
@@ -46,43 +50,27 @@ class AppMuteManager @Inject constructor(
     private var needTextUpdate = true
 
     init {
-        googleApiClient = GoogleApiClient.Builder(context)
-            .addApi(Wearable.API)
-            .addConnectionCallbacks(this)
-            .addOnConnectionFailedListener(this)
-            .build()
-        googleApiClient.connect()
+        messageClient = Wearable.getMessageClient(context)
 
         val maxMemory = Runtime.getRuntime().maxMemory().toInt()
         iconCache = IconCache(maxMemory)
+
+        messageClient.addListener(this)
+        listTransmitter = PlayServicesConnectionToReceiver(messageClient, true)
+        listTransmitter.setProvider(this)
+        messageClient.addListener(
+            this,
+            Uri.parse("wear://*" + CommPaths.COMMAND_APP_MUTE),
+            MessageClient.FILTER_LITERAL
+        )
     }
 
     fun onDestroy() {
-        if (googleApiClient.isConnected) {
-            listTransmitter!!.disconnect()
-            Wearable.MessageApi.removeListener(googleApiClient, this)
-            googleApiClient.disconnect()
-        }
+        coroutineScope.cancel()
+        messageClient.removeListener(this)
+        listTransmitter.disconnect()
     }
 
-    override fun onConnected(bundle: Bundle?) {
-        listTransmitter = PlayServicesConnectionToReceiver(googleApiClient, true)
-        listTransmitter!!.setProvider(this)
-        Wearable.MessageApi.addListener(
-            googleApiClient,
-            this,
-            Uri.parse("wear://*" + CommPaths.COMMAND_APP_MUTE),
-            MessageApi.FILTER_LITERAL
-        )
-    }
-
-    override fun onConnectionFailed(connectionResult: ConnectionResult) {
-        GoogleApiAvailability.getInstance().showErrorNotification(
-            context, connectionResult
-        )
-    }
-
-    override fun onConnectionSuspended(i: Int) {}
     private fun loadAppList() {
         needIconUpdate = true
         needTextUpdate = true
@@ -130,8 +118,7 @@ class AppMuteManager @Inject constructor(
                 ParcelPacker.getParcelable(messageEvent.data, AppMuteCommand.CREATOR)
             val mutedAppPackage = appList[appMuteCommand.appIndex].packageName
             mute(mutedAppPackage)
-            Wearable.MessageApi.sendMessage(
-                googleApiClient,
+            messageClient.sendMessage(
                 messageEvent.sourceNodeId,
                 CommPaths.COMMAND_RECEIVAL_ACKNOWLEDGMENT,
                 byteArrayOf()

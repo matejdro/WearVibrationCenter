@@ -21,8 +21,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-
+    compileOptions {
+        sourceCompatibility = 17
+        targetCompatibility = 17
+    }
 }
+
+kotlin {
+    jvmToolchain(17)
+}
+
 
 dependencies {
     implementation project(':wearutils')

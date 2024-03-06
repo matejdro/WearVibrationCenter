@@ -2,21 +2,21 @@ package com.matejdro.wearremotelist.providerside.conn
 
 import android.net.Uri
 import android.os.Parcel
-import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.common.api.ResultCallback
-import com.google.android.gms.wearable.MessageApi.MessageListener
-import com.google.android.gms.wearable.MessageApi.SendMessageResult
+import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.MessageEvent
-import com.google.android.gms.wearable.Wearable
 import com.matejdro.wearremotelist.CommonPlayServicesPaths
 import com.matejdro.wearremotelist.providerside.RemoteListProvider
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import java.nio.ByteBuffer
 
 class PlayServicesConnectionToReceiver(
-    googleApiClient: GoogleApiClient?,
+    private val messageClient: MessageClient,
     registerListener: Boolean
-) : ConnectionToReceiver, MessageListener {
-    private val googleApiClient: GoogleApiClient
+) : ConnectionToReceiver, MessageClient.OnMessageReceivedListener {
     private var remoteListProvider: RemoteListProvider? = null
 
     /**
@@ -25,21 +25,17 @@ class PlayServicesConnectionToReceiver(
      * If `false`, you must manually call onMessageReceived() when new messages arrive.
      */
     init {
-        if (googleApiClient == null) throw NullPointerException()
-        require(googleApiClient.isConnected) { "Provided GoogleApiClient is not connected to Google Play Services." }
-        require(googleApiClient.hasConnectedApi(Wearable.API)) { "Provided GoogleApiClient does not have Wearable API connected." }
-        this.googleApiClient = googleApiClient
-        if (registerListener) Wearable.MessageApi.addListener(googleApiClient, this)
+        if (registerListener) messageClient.addListener(this)
     }
 
     /**
      * Remove my listener from provided GoogleApiClient.
      */
     fun disconnect() {
-        Wearable.MessageApi.removeListener(googleApiClient, this)
+        messageClient.removeListener(this)
     }
 
-    override fun updateListSize(listPath: String, nodeId: String) {
+    override suspend fun updateListSize(listPath: String, nodeId: String) {
         checkNotNull(remoteListProvider) { "List Provider is still null when trying to send items." }
         val targetUri = CommonPlayServicesPaths.RESPONSE_LIST_SIZE_URI
             .buildUpon()
@@ -47,15 +43,16 @@ class PlayServicesConnectionToReceiver(
             .build()
         val size = remoteListProvider!!.getRemoteListSize(listPath)
         val data = ByteBuffer.allocate(4).putInt(size).array()
-        Wearable.MessageApi.sendMessage(googleApiClient, nodeId, targetUri.toString(), data)
-            .setResultCallback(ListMessageResultCallback(listPath))
+
+
+        messageClient.sendMessage(nodeId, targetUri.toString(), data).await()
     }
 
-    override fun sendItem(listPath: String, position: Int, nodeId: String) {
+    override suspend fun sendItem(listPath: String, position: Int, nodeId: String) {
         sendItems(listPath, position, position, nodeId)
     }
 
-    override fun sendItems(listPath: String, from: Int, to: Int, nodeId: String) {
+    override suspend fun sendItems(listPath: String, from: Int, to: Int, nodeId: String) {
         checkNotNull(remoteListProvider) { "List Provider is still null when trying to send items." }
         val targetUri = CommonPlayServicesPaths.RESPONSE_ITEMS_URI
             .buildUpon()
@@ -70,37 +67,31 @@ class PlayServicesConnectionToReceiver(
         }
         val data = outParcel.marshall()
         outParcel.recycle()
-        Wearable.MessageApi.sendMessage(googleApiClient, nodeId, targetUri.toString(), data)
-            .setResultCallback(ListMessageResultCallback(listPath))
+        messageClient.sendMessage(nodeId, targetUri.toString(), data).await()
     }
 
-    override fun setProvider(provider: RemoteListProvider) {
+    override fun setProvider(provider: RemoteListProvider?) {
         remoteListProvider = provider
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onMessageReceived(messageEvent: MessageEvent) {
         val messageUri = Uri.parse(messageEvent.path)
         if (CommonPlayServicesPaths.REQUEST_LIST_SIZE_URI.path == messageUri.path) {
-            val listPath = messageUri.getQueryParameter(CommonPlayServicesPaths.PARAMETER_LIST_PATH)
-            updateListSize(listPath!!, messageEvent.sourceNodeId)
+            val listPath =
+                messageUri.getQueryParameter(CommonPlayServicesPaths.PARAMETER_LIST_PATH) ?: return
+            GlobalScope.launch(Dispatchers.Main.immediate) {
+                updateListSize(listPath, messageEvent.sourceNodeId)
+            }
         } else if (CommonPlayServicesPaths.REQUEST_ITEMS_URI.path == messageUri.path) {
-            val listPath = messageUri.getQueryParameter(CommonPlayServicesPaths.PARAMETER_LIST_PATH)
+            val listPath =
+                messageUri.getQueryParameter(CommonPlayServicesPaths.PARAMETER_LIST_PATH) ?: return
             val from = messageUri.getQueryParameter(CommonPlayServicesPaths.PARAMETER_ITEMS_FROM)!!
                 .toInt()
             val to = messageUri.getQueryParameter(CommonPlayServicesPaths.PARAMETER_ITEMS_TO)!!
                 .toInt()
-            sendItems(listPath!!, from, to, messageEvent.sourceNodeId)
-        }
-    }
-
-    private inner class ListMessageResultCallback(private val listPath: String) :
-        ResultCallback<SendMessageResult> {
-        override fun onResult(sendMessageResult: SendMessageResult) {
-            if (!sendMessageResult.status.isSuccess) {
-                if (remoteListProvider != null) remoteListProvider!!.onError(
-                    listPath,
-                    CommonPlayServicesPaths.getErrorCodeFromGMSStatus(sendMessageResult.status.statusCode)
-                )
+            GlobalScope.launch(Dispatchers.Main.immediate) {
+                sendItems(listPath, from, to, messageEvent.sourceNodeId)
             }
         }
     }

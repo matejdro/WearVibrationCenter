@@ -9,7 +9,7 @@ interface ConnectionToReceiver {
      * @param listPath Path of the list to update list size on.
      * @param nodeId ID of the node that will receive the new size.
      */
-    fun updateListSize(listPath: String?, nodeId: String?)
+    suspend fun updateListSize(listPath: String, nodeId: String)
 
     /**
      * Manually (re-)send specific range of items to the receiver
@@ -20,7 +20,7 @@ interface ConnectionToReceiver {
      * @param to Last item of the updating range.
      * @param nodeId ID of the node that will receive the new size.
      */
-    fun sendItems(listPath: String?, from: Int, to: Int, nodeId: String?)
+    suspend fun sendItems(listPath: String, from: Int, to: Int, nodeId: String)
 
     /**
      * Manually (re-)send specific item to the receiver.
@@ -30,7 +30,7 @@ interface ConnectionToReceiver {
      * @param position Position of the item to re-send
      * @param nodeId ID of the node that will receive the new size.
      */
-    fun sendItem(listPath: String?, position: Int, nodeId: String?)
+    suspend fun sendItem(listPath: String, position: Int, nodeId: String)
 
     /**
      * Set provider that will provide list contents.
