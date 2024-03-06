@@ -1,262 +1,224 @@
-package com.matejdro.wearvibrationcenter.mute;
+package com.matejdro.wearvibrationcenter.mute
 
-import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.Bundle;
-import android.os.Parcelable;
-import android.service.notification.NotificationListenerService;
-import android.service.notification.StatusBarNotification;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.res.ResourcesCompat;
-import android.util.LruCache;
+import android.R
+import android.content.Context
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.net.Uri
+import android.os.Bundle
+import android.os.Parcelable
+import android.service.notification.NotificationListenerService
+import android.util.LruCache
+import androidx.core.content.res.ResourcesCompat
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.wearable.MessageApi
+import com.google.android.gms.wearable.MessageApi.MessageListener
+import com.google.android.gms.wearable.MessageEvent
+import com.google.android.gms.wearable.Wearable
+import com.matejdro.wearremotelist.parcelables.CompressedParcelableBitmap
+import com.matejdro.wearremotelist.parcelables.StringParcelableWraper
+import com.matejdro.wearremotelist.providerside.RemoteListProvider
+import com.matejdro.wearremotelist.providerside.conn.PlayServicesConnectionToReceiver
+import com.matejdro.wearutils.messages.ParcelPacker
+import com.matejdro.wearutils.miscutils.BitmapUtils
+import com.matejdro.wearvibrationcenter.common.AppMuteCommand
+import com.matejdro.wearvibrationcenter.common.CommPaths
+import com.matejdro.wearvibrationcenter.notification.ProcessedNotification
+import dagger.hilt.android.qualifiers.ApplicationContext
+import timber.log.Timber
+import java.util.Collections
+import javax.inject.Inject
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.wearable.MessageApi;
-import com.google.android.gms.wearable.MessageEvent;
-import com.google.android.gms.wearable.Wearable;
-import com.matejdro.wearremotelist.parcelables.CompressedParcelableBitmap;
-import com.matejdro.wearremotelist.parcelables.StringParcelableWraper;
-import com.matejdro.wearremotelist.providerside.RemoteListProvider;
-import com.matejdro.wearremotelist.providerside.conn.PlayServicesConnectionToReceiver;
-import com.matejdro.wearutils.messages.ParcelPacker;
-import com.matejdro.wearutils.miscutils.BitmapUtils;
-import com.matejdro.wearvibrationcenter.common.AppMuteCommand;
-import com.matejdro.wearvibrationcenter.common.CommPaths;
-import com.matejdro.wearvibrationcenter.notification.NotificationService;
-import com.matejdro.wearvibrationcenter.notification.ProcessedNotification;
+class AppMuteManager @Inject constructor(
+    @param:ApplicationContext private val context: Context,
+    private val notificationService: NotificationListenerService
+) : GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
+    RemoteListProvider, MessageListener {
+    private val googleApiClient: GoogleApiClient
+    private lateinit var listTransmitter: PlayServicesConnectionToReceiver
+    private val mutedApps = Collections.synchronizedSet(HashSet<String>())
+    private val appList: MutableList<InstalledApp> = ArrayList()
+    private val iconCache: IconCache
+    private var needIconUpdate = true
+    private var needTextUpdate = true
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+    init {
+        googleApiClient = GoogleApiClient.Builder(context)
+            .addApi(Wearable.API)
+            .addConnectionCallbacks(this)
+            .addOnConnectionFailedListener(this)
+            .build()
+        googleApiClient.connect()
 
-import javax.inject.Inject;
-
-import dagger.hilt.android.qualifiers.ApplicationContext;
-import timber.log.Timber;
-
-public class AppMuteManager implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, RemoteListProvider, MessageApi.MessageListener {
-    private final GoogleApiClient             googleApiClient;
-    private final Context                     context;
-    private final NotificationListenerService notificationService;
-
-    private PlayServicesConnectionToReceiver listTransmitter;
-
-    private final Set<String> mutedApps = Collections.synchronizedSet(new HashSet<String>());
-    private final List<InstalledApp> appList = new ArrayList<>();
-    private final LruCache<String, Bitmap> iconCache;
-
-    private boolean needIconUpdate = true;
-    private boolean needTextUpdate = true;
-
-    @Inject
-    public AppMuteManager(@ApplicationContext Context context, NotificationListenerService notificationService) {
-        this.context = context;
-        this.notificationService = notificationService;
-
-        googleApiClient = new GoogleApiClient.Builder(context)
-                .addApi(Wearable.API)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
-        googleApiClient.connect();
-
-        final int maxMemory = (int) (Runtime.getRuntime().maxMemory());
-        iconCache = new LruCache<String, Bitmap>(maxMemory / 32) // 1/16th of device's RAM should be far enough for all icons
-        {
-            @Override
-            protected int sizeOf(String key, Bitmap value) {
-                return value.getByteCount();
-            }
-        };
-
+        val maxMemory = Runtime.getRuntime().maxMemory().toInt()
+        iconCache = IconCache(maxMemory)
     }
 
-    public void onDestroy() {
-        if (googleApiClient.isConnected()) {
-            listTransmitter.disconnect();
-            Wearable.MessageApi.removeListener(googleApiClient, this);
-
-            googleApiClient.disconnect();
+    fun onDestroy() {
+        if (googleApiClient.isConnected) {
+            listTransmitter!!.disconnect()
+            Wearable.MessageApi.removeListener(googleApiClient, this)
+            googleApiClient.disconnect()
         }
-
     }
 
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        listTransmitter = new PlayServicesConnectionToReceiver(googleApiClient, true);
-        listTransmitter.setProvider(this);
-
-        Wearable.MessageApi.addListener(googleApiClient, this, Uri.parse("wear://*" + CommPaths.COMMAND_APP_MUTE), MessageApi.FILTER_LITERAL);
+    override fun onConnected(bundle: Bundle?) {
+        listTransmitter = PlayServicesConnectionToReceiver(googleApiClient, true)
+        listTransmitter!!.setProvider(this)
+        Wearable.MessageApi.addListener(
+            googleApiClient,
+            this,
+            Uri.parse("wear://*" + CommPaths.COMMAND_APP_MUTE),
+            MessageApi.FILTER_LITERAL
+        )
     }
 
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        GoogleApiAvailability.getInstance().showErrorNotification(context, connectionResult);
+    override fun onConnectionFailed(connectionResult: ConnectionResult) {
+        GoogleApiAvailability.getInstance().showErrorNotification(
+            context, connectionResult
+        )
     }
 
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    private void loadAppList() {
-        needIconUpdate = true;
-        needTextUpdate = true;
-
-        Set<String> addedApps = new HashSet<>();
-        appList.clear();
-        for (StatusBarNotification notification : notificationService.getActiveNotifications()) {
-            String appPackage = notification.getPackageName();
+    override fun onConnectionSuspended(i: Int) {}
+    private fun loadAppList() {
+        needIconUpdate = true
+        needTextUpdate = true
+        val addedApps: MutableSet<String> = HashSet()
+        appList.clear()
+        for (notification in notificationService.getActiveNotifications()) {
+            val appPackage = notification.packageName
             if (addedApps.contains(appPackage)) {
-                continue;
+                continue
             }
-
-            addedApps.add(appPackage);
-
-            ApplicationInfo applicationInfo;
+            addedApps.add(appPackage)
+            var applicationInfo: ApplicationInfo
             try {
-                applicationInfo = context.getPackageManager().getApplicationInfo(appPackage, 0);
-                String label = context.getPackageManager().getApplicationLabel(applicationInfo).toString();
-                appList.add(new InstalledApp(appPackage, label));
-            } catch (PackageManager.NameNotFoundException ignored) {
+                applicationInfo = context.packageManager.getApplicationInfo(appPackage, 0)
+                val label = context.packageManager.getApplicationLabel(applicationInfo).toString()
+                appList.add(InstalledApp(appPackage, label))
+            } catch (ignored: PackageManager.NameNotFoundException) {
             }
         }
-
-        Collections.sort(appList);
+        Collections.sort(appList)
     }
 
-    public boolean isNotificationMuted(ProcessedNotification notification) {
-        if (!mutedApps.contains(notification.getContentNotification().getPackageName())) {
-            return false;
+    fun isNotificationMuted(notification: ProcessedNotification): Boolean {
+        if (!mutedApps.contains(notification.contentNotification.packageName)) {
+            return false
         }
-
-        if (notification.isSubsequentNotification() || notification.isUpdateNotification()) {
+        return if (notification.isSubsequentNotification || notification.isUpdateNotification) {
             // Notification is either update or subsequent,
             // meaning that user has not yet dismissed all notifications from this app.
             // Lets keep the mute
-
-            return true;
+            true
         } else {
-            mutedApps.remove(notification.getContentNotification().getPackageName());
-            return false;
+            mutedApps.remove(notification.contentNotification.packageName)
+            false
         }
     }
 
-    private void mute(String appPackage) {
-        mutedApps.add(appPackage);
+    private fun mute(appPackage: String) {
+        mutedApps.add(appPackage)
     }
 
-    @Override
-    public void onMessageReceived(MessageEvent messageEvent) {
-        if (messageEvent.getPath().equals(CommPaths.COMMAND_APP_MUTE)) {
-            AppMuteCommand appMuteCommand = ParcelPacker.getParcelable(messageEvent.getData(), AppMuteCommand.CREATOR);
-
-            String mutedAppPackage = appList.get(appMuteCommand.getAppIndex()).packageName;
-            mute(mutedAppPackage);
-
-            Wearable.MessageApi.sendMessage(googleApiClient, messageEvent.getSourceNodeId(), CommPaths.COMMAND_RECEIVAL_ACKNOWLEDGMENT, null);
+    override fun onMessageReceived(messageEvent: MessageEvent) {
+        if (messageEvent.path == CommPaths.COMMAND_APP_MUTE) {
+            val appMuteCommand =
+                ParcelPacker.getParcelable(messageEvent.data, AppMuteCommand.CREATOR)
+            val mutedAppPackage = appList[appMuteCommand.appIndex].packageName
+            mute(mutedAppPackage)
+            Wearable.MessageApi.sendMessage(
+                googleApiClient,
+                messageEvent.sourceNodeId,
+                CommPaths.COMMAND_RECEIVAL_ACKNOWLEDGMENT,
+                byteArrayOf()
+            )
         }
     }
 
-    @Override
-    public int getRemoteListSize(String listPath) {
-        if (listPath.equals(CommPaths.LIST_ACTIVE_APPS_NAMES)) {
+    override fun getRemoteListSize(listPath: String): Int {
+        if (listPath == CommPaths.LIST_ACTIVE_APPS_NAMES) {
             if (needIconUpdate) {
-                loadAppList();
-
-                needTextUpdate = false;
+                loadAppList()
+                needTextUpdate = false
             } else {
                 // Once both text and icons have been updated, mark both as them as needing updates
                 // to update them on next opening
-                needIconUpdate = true;
-                needTextUpdate = true;
+                needIconUpdate = true
+                needTextUpdate = true
             }
-        } else if (listPath.equals(CommPaths.LIST_ACTIVE_APPS_ICONS)) {
+        } else if (listPath == CommPaths.LIST_ACTIVE_APPS_ICONS) {
             if (needTextUpdate) {
-                loadAppList();
-                needIconUpdate = false;
+                loadAppList()
+                needIconUpdate = false
             } else {
                 // Once both text and icons have been updated, mark both as them as needing updates
                 // to update them on next opening
-                needIconUpdate = true;
-                needTextUpdate = true;
+                needIconUpdate = true
+                needTextUpdate = true
             }
         } else {
-            return -1;
+            return -1
         }
-
-        return appList.size();
+        return appList.size
     }
 
-    @Override
-    public Parcelable getItem(String listPath, int position) {
-        if (listPath.equals(CommPaths.LIST_ACTIVE_APPS_NAMES)) {
-            return new StringParcelableWraper(appList.get(position).getLabel());
-        } else if (listPath.equals(CommPaths.LIST_ACTIVE_APPS_ICONS)) {
-            String appPackage = appList.get(position).getPackageName();
-            return new CompressedParcelableBitmap(getIcon(appPackage));
+    override fun getItem(listPath: String, position: Int): Parcelable? {
+        return if (listPath == CommPaths.LIST_ACTIVE_APPS_NAMES) {
+            StringParcelableWraper(appList[position].label)
+        } else if (listPath == CommPaths.LIST_ACTIVE_APPS_ICONS) {
+            val appPackage: String = appList[position].packageName
+            CompressedParcelableBitmap(getIcon(appPackage))
         } else {
-            return null;
+            null
         }
     }
 
-    private Bitmap getIcon(String appPackage) {
-        Bitmap storedIcon = iconCache.get(appPackage);
+    private fun getIcon(appPackage: String): Bitmap? {
+        val storedIcon = iconCache[appPackage]
         if (storedIcon != null) {
-            return storedIcon;
+            return storedIcon
         }
-
-
         try {
-            Drawable appIconDrawable = context.getPackageManager().getApplicationIcon(appPackage);
-            Bitmap iconBitmap = BitmapUtils.getBitmap(appIconDrawable);
+            val appIconDrawable = context.packageManager.getApplicationIcon(appPackage)
+            var iconBitmap = BitmapUtils.getBitmap(appIconDrawable)
             if (iconBitmap != null) {
-                iconBitmap = BitmapUtils.shrinkPreservingRatio(iconBitmap, 64, 64);
-
-                iconCache.put(appPackage, iconBitmap);
-                return iconBitmap;
+                iconBitmap = BitmapUtils.shrinkPreservingRatio(iconBitmap, 64, 64)
+                iconCache.put(appPackage, iconBitmap)
+                return iconBitmap
             }
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
+        } catch (e: PackageManager.NameNotFoundException) {
+            e.printStackTrace()
         }
-
-        return BitmapUtils.getBitmap(ResourcesCompat.getDrawable(context.getResources(), android.R.drawable.sym_def_app_icon, null));
+        return BitmapUtils.getBitmap(
+            ResourcesCompat.getDrawable(
+                context.resources,
+                R.drawable.sym_def_app_icon,
+                null
+            )
+        )
     }
 
-    @Override
-    public void onError(String listPath, int errorCode) {
-        Timber.e("Error %s %d", listPath, errorCode);
+    override fun onError(listPath: String, errorCode: Int) {
+        Timber.e("Error %s %d", listPath, errorCode)
     }
 
-    private static class InstalledApp implements Comparable<InstalledApp> {
-        private final String packageName;
-        private final String label;
+    private class InstalledApp(val packageName: String, val label: String) :
+        Comparable<InstalledApp> {
 
-        public InstalledApp(String packageName, String label) {
-            this.packageName = packageName;
-            this.label = label;
+        override fun compareTo(o: InstalledApp): Int {
+            return label.compareTo(o.label)
         }
+    }
 
-        public String getPackageName() {
-            return packageName;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-
-        @Override
-        public int compareTo(@NonNull InstalledApp o) {
-            return label.compareTo(o.label);
+    private class IconCache(maxMemory: Int) : LruCache<String?, Bitmap>(
+        maxMemory / 32 // 1/16th of device's RAM should be far enough for all icons
+    ) {
+        override fun sizeOf(key: String?, value: Bitmap): Int {
+            return value.getByteCount()
         }
     }
 }
