@@ -1,53 +1,45 @@
-package com.matejdro.wearremotelist.receiverside;
+package com.matejdro.wearremotelist.receiverside
 
-import android.os.Parcelable;
-import android.util.ArrayMap;
+import android.os.Parcelable
+import android.os.Parcelable.Creator
+import android.util.ArrayMap
+import com.matejdro.wearremotelist.ErrorListener
+import com.matejdro.wearremotelist.receiverside.conn.ConnectionToProvider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import java.util.concurrent.PriorityBlockingQueue
 
-import androidx.annotation.NonNull;
+class RemoteListManager(
+    private val originalConnectionToProvider: ConnectionToProvider,
+    listener: RemoteListListener
+) {
+    private val connectionToProvider: ConnectionToProvider
+    private val listDataReceiver: ListDataReceiver
+    private var remoteListListener: RemoteListListener
 
-import com.matejdro.wearremotelist.ErrorListener;
-import com.matejdro.wearremotelist.receiverside.conn.ConnectionToProvider;
+    @Volatile
+    private var transferring = false
+    private val transfers = PriorityBlockingQueue<RemoteListRequest>()
+    private val activeLists: MutableMap<String, RemoteListImpl<*>> = ArrayMap()
 
-import java.util.Map;
-import java.util.concurrent.PriorityBlockingQueue;
-
-public class RemoteListManager
-{
-    private ConnectionToProvider connectionToProvider;
-    private ConnectionToProvider originalConnectionToProvider;
-
-    private ListDataReceiver listDataReceiver;
-    private RemoteListListener remoteListListener;
-
-    private volatile boolean transferring = false;
-    private PriorityBlockingQueue<RemoteListRequest> transfers = new PriorityBlockingQueue<>();
-
-    private Map<String, RemoteListImpl<?>> activeLists = new ArrayMap<>();
-
-    public RemoteListManager(ConnectionToProvider connectionToProvider, RemoteListListener listener)
-    {
-        this.originalConnectionToProvider = connectionToProvider;
-        this.connectionToProvider = new ProxyConnectionToProvider(connectionToProvider);
-        this.remoteListListener = listener;
-
-        this.listDataReceiver = new MainDataReceiver();
-        this.connectionToProvider.setDataReceiver(listDataReceiver);
+    init {
+        connectionToProvider = ProxyConnectionToProvider(originalConnectionToProvider)
+        remoteListListener = listener
+        listDataReceiver = MainDataReceiver()
+        originalConnectionToProvider.setDataReceiver(listDataReceiver)
     }
 
-    public void setListener(RemoteListListener remoteListListener)
-    {
-        this.remoteListListener = remoteListListener;
+    fun setListener(remoteListListener: RemoteListListener) {
+        this.remoteListListener = remoteListListener
     }
 
     /**
      * Get existing list that has already been created.
      * @param listPath Path of the list.
-     * @return List or {@code null} if list with such path has not yet been created
+     * @return List or `null` if list with such path has not yet been created
      */
-    @SuppressWarnings("unchecked")
-    public <T extends Parcelable> RemoteList<T> getExistingList(String listPath)
-    {
-        return (RemoteList<T>) activeLists.get(listPath);
+    fun <T : Parcelable?> getExistingList(listPath: String): RemoteList<T> {
+        return activeLists[listPath] as RemoteList<T>
     }
 
     /**
@@ -55,178 +47,119 @@ public class RemoteListManager
      * @param listPath Path of the list. Provider side will receive this string to identify the list.
      * @param creator Creator that can unparcel items from this list.
      * @param itemStorageCapacity Amount of items that can be cached on the device at the same time. Use lower numbers if items are big and receiver device has low amount of RAM (such as smartwatch).
-     * @param amountToRequestAtOnce Amount of items that can be transferred in one message. Should be several times lower than {@code itemStorageCapacity}. Must be at least 3.
+     * @param amountToRequestAtOnce Amount of items that can be transferred in one message. Should be several times lower than `itemStorageCapacity`. Must be at least 3.
      * @param <T> Type of the object that this list stores.
-     */
-    public <T extends Parcelable> RemoteList<T> createRemoteList(String listPath, Parcelable.Creator<T> creator, int itemStorageCapacity, int amountToRequestAtOnce)
-    {
-        if (amountToRequestAtOnce < 3)
-            throw new IllegalArgumentException("amountToRequestAtOnce must be at least 3.");
-
-        if (itemStorageCapacity <= amountToRequestAtOnce)
-            throw new IllegalArgumentException("itemStorageCapacity must be bigger than amountToRequestAtOnce.");
-
-        RemoteList<T> list = new RemoteListImpl<T>(listPath, creator, connectionToProvider, itemStorageCapacity, (amountToRequestAtOnce - 1) / 2);
-        activeLists.put(listPath, (RemoteListImpl<?>) list);
-        list.invalidate();
-
-        return list;
+    </T> */
+    fun <T : Parcelable?> createRemoteList(
+        listPath: String,
+        creator: Creator<T>,
+        itemStorageCapacity: Int,
+        amountToRequestAtOnce: Int,
+        coroutineScope: CoroutineScope
+    ): RemoteList<T> {
+        require(!(amountToRequestAtOnce < 3)) { "amountToRequestAtOnce must be at least 3." }
+        if (itemStorageCapacity <= amountToRequestAtOnce) throw IllegalArgumentException("itemStorageCapacity must be bigger than amountToRequestAtOnce.")
+        val list: RemoteList<T> = RemoteListImpl(
+            listPath,
+            creator,
+            originalConnectionToProvider,
+            coroutineScope,
+            itemStorageCapacity,
+            (amountToRequestAtOnce - 1) / 2,
+        )
+        activeLists[listPath] = list as RemoteListImpl<*>
+        coroutineScope.launch {
+            list.invalidate()
+        }
+        return list
     }
 
-    private class MainDataReceiver implements ListDataReceiver
-    {
-        @Override
-        public void updateSizeReceived(String listPath, int newSize)
-        {
-            RemoteListImpl<?> list = activeLists.get(listPath);
-            if (list == null)
-                return;
-
-            list.updateSizeReceived(listPath, newSize);
-            remoteListListener.onListSizeChanged(listPath);
+    private inner class MainDataReceiver : ListDataReceiver {
+        override fun updateSizeReceived(listPath: String, newSize: Int) {
+            val list = activeLists.get(listPath) ?: return
+            list.updateSizeReceived(listPath, newSize)
+            remoteListListener.onListSizeChanged(listPath)
         }
 
-        @Override
-        public void dataReceived(String listPath, int from, Parcelable[] data)
-        {
-            RemoteListImpl<?> list = activeLists.get(listPath);
-            if (list == null)
-                return;
-
-            list.dataReceived(listPath, from, data);
-            remoteListListener.newEntriesTransferred(listPath, from, from + data.length - 1);
-
-            transferring = false;
-
-            RemoteListRequest nextTransfer = transfers.poll();
-            if (nextTransfer != null)
-            {
-
-                originalConnectionToProvider.requestItems(nextTransfer.getList().getPath(), nextTransfer.getFrom(), nextTransfer.getTo());
-                transferring = true;
+        override suspend fun dataReceived(listPath: String, from: Int, data: Array<Parcelable?>) {
+            val list = activeLists.get(listPath) ?: return
+            list.dataReceived(listPath, from, data)
+            remoteListListener.newEntriesTransferred(listPath, from, from + data.size - 1)
+            transferring = false
+            val nextTransfer = transfers.poll()
+            if (nextTransfer != null) {
+                originalConnectionToProvider.requestItems(
+                    nextTransfer.list.path,
+                    nextTransfer.from,
+                    nextTransfer.to
+                )
+                transferring = true
             }
-
         }
 
-        @Override
-        public Parcelable.Creator getParcelableCreator(String listPath)
-        {
-            RemoteListImpl<?> list = activeLists.get(listPath);
-            if (list == null)
-                return null;
-
-            return list.getParcelableCreator(listPath);
+        override fun getParcelableCreator(listPath: String): Creator<*>? {
+            val list = activeLists.get(listPath) ?: return null
+            return list.getParcelableCreator(listPath)
         }
 
-        @Override
-        public void onError(String listPath, int errorCode)
-        {
-            RemoteListImpl<?> list = activeLists.get(listPath);
-            if (list == null)
-                return;
-
-            list.onError(listPath, errorCode);
-            remoteListListener.onError(listPath, errorCode);
+        override fun onError(listPath: String, errorCode: Int) {
+            val list = activeLists.get(listPath) ?: return
+            list.onError(listPath, errorCode)
+            remoteListListener.onError(listPath, errorCode)
         }
     }
 
-    private class ProxyConnectionToProvider implements ConnectionToProvider
-    {
-        private ConnectionToProvider original;
-
-        public ProxyConnectionToProvider(ConnectionToProvider original)
-        {
-            this.original = original;
-        }
-
-        @Override
-        public void requestListSize(String listPath)
-        {
+    private inner class ProxyConnectionToProvider(private val original: ConnectionToProvider) :
+        ConnectionToProvider {
+        override suspend fun requestListSize(listPath: String) {
             //This packet is small and can be simultaneous.
-            original.requestListSize(listPath);
+            original.requestListSize(listPath)
         }
 
-        @Override
-        public void requestItems(String listPath, int from, int to)
-        {
-            if (transfers.isEmpty() && !transferring)
-            {
-                original.requestItems(listPath, from, to);
-                transferring = true;
-            }
-            else
-            {
+        override suspend fun requestItems(listPath: String, from: Int, to: Int) {
+            if (transfers.isEmpty() && !transferring) {
+                original.requestItems(listPath, from, to)
+                transferring = true
+            } else {
                 //Each list can be entered only once in the queue.
-                boolean existingRequestUpdated = false;
-
-                for (RemoteListRequest remoteListRequest : transfers)
-                {
-                    if (remoteListRequest.getList().getPath().equals(listPath))
-                    {
-                        remoteListRequest.updateFromTo(from, to);
-                        existingRequestUpdated = true;
-                        break;
+                var existingRequestUpdated = false
+                for (remoteListRequest in transfers) {
+                    if (remoteListRequest.list.path == listPath) {
+                        remoteListRequest.updateFromTo(from, to)
+                        existingRequestUpdated = true
+                        break
                     }
                 }
-
-                if (!existingRequestUpdated)
-                    transfers.add(new RemoteListRequest(getExistingList(listPath), from, to));
+                if (!existingRequestUpdated) transfers.add(
+                    RemoteListRequest(
+                        getExistingList<Parcelable>(
+                            listPath
+                        ), from, to
+                    )
+                )
             }
-
         }
 
-        @Override
-        public void setDataReceiver(ListDataReceiver receiver)
-        {
-            original.setDataReceiver(receiver);
+        override fun setDataReceiver(receiver: ListDataReceiver?) {
+            original.setDataReceiver(receiver)
         }
     }
 
-    public interface ListDataReceiver extends ErrorListener
-    {
-        void updateSizeReceived(String listPath, int newSize);
-        void dataReceived(String listPath, int from, Parcelable[] data);
-        Parcelable.Creator getParcelableCreator(String listPath);
+    interface ListDataReceiver : ErrorListener {
+        fun updateSizeReceived(listPath: String, newSize: Int)
+        suspend fun dataReceived(listPath: String, from: Int, data: Array<Parcelable?>)
+        fun getParcelableCreator(listPath: String): Creator<*>?
     }
 
-    private static class RemoteListRequest implements Comparable<RemoteListRequest>
-    {
-        public RemoteListRequest(RemoteList list, int from, int to)
-        {
-            this.list = list;
-            this.from = from;
-            this.to = to;
+    private class RemoteListRequest(val list: RemoteList<*>, var from: Int, var to: Int) :
+        Comparable<RemoteListRequest> {
+        fun updateFromTo(from: Int, to: Int) {
+            this.from = from
+            this.to = to
         }
 
-        private RemoteList list;
-        private int from;
-        private int to;
-
-        public RemoteList getList()
-        {
-            return list;
-        }
-
-        public int getFrom()
-        {
-            return from;
-        }
-
-        public int getTo()
-        {
-            return to;
-        }
-
-        public void updateFromTo(int from, int to)
-        {
-            this.from = from;
-            this.to = to;
-        }
-
-        @Override
-        public int compareTo(@NonNull RemoteListRequest another)
-        {
-            return another.getList().getPriority() - this.getList().getPriority();
+        override fun compareTo(another: RemoteListRequest): Int {
+            return another.list.priority - this.list.priority
         }
     }
 }

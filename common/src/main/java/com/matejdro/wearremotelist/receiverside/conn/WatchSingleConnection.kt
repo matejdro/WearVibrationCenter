@@ -1,18 +1,16 @@
 package com.matejdro.wearremotelist.receiverside.conn
 
-import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.Node
-import com.google.android.gms.wearable.Wearable
+import com.google.android.gms.wearable.NodeClient
+import kotlinx.coroutines.tasks.await
 import java.util.Collections
 
-class WatchSingleConnection
-/**
- * {@inheritDoc}
- */
-    (googleApiClient: GoogleApiClient?) : PlayServicesConnectionToProvider(googleApiClient) {
+class WatchSingleConnection(messageClient: MessageClient, private val nodeClient: NodeClient) :
+    PlayServicesConnectionToProvider(messageClient) {
 
-    override fun getProviderNodeId(): String? {
-        val connectedNodes = Wearable.NodeApi.getConnectedNodes(googleApiClient).await().nodes
+    override suspend fun getProviderNodeId(): String? {
+        val connectedNodes = nodeClient.getConnectedNodes().await()
         if (connectedNodes.isEmpty()) return null
         Collections.sort(connectedNodes, NodeNearbyComparator.INSTANCE)
         return connectedNodes[0].id

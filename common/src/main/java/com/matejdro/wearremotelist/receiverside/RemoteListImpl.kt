@@ -1,201 +1,131 @@
-package com.matejdro.wearremotelist.receiverside;
+package com.matejdro.wearremotelist.receiverside
 
-import android.os.Parcelable;
-import android.util.LruCache;
+import android.os.Parcelable
+import android.os.Parcelable.Creator
+import android.util.LruCache
+import com.matejdro.wearremotelist.ErrorListener.TransferError
+import com.matejdro.wearremotelist.receiverside.RemoteListManager.ListDataReceiver
+import com.matejdro.wearremotelist.receiverside.conn.ConnectionToProvider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlin.math.max
+import kotlin.math.min
 
-import com.matejdro.wearremotelist.receiverside.conn.ConnectionToProvider;
+internal class RemoteListImpl<E : Parcelable?>(
+    override val path: String,
+    private val creator: Creator<E>,
+    private val connectionToProvider: ConnectionToProvider,
+    private val coroutineScope: CoroutineScope,
+    itemStorageSize: Int,
+    private val itemRetrievalRangeInOneDirection: Int
+) : RemoteList<E>, ListDataReceiver {
+    private val entries: LruCache<Int, E>
+    private var size = 0
+    override var priority = 0
 
-class RemoteListImpl<E extends Parcelable> implements RemoteList<E>, RemoteListManager.ListDataReceiver
-{
-    private String                listPath;
-    private LruCache<Integer, E>  entries;
-    private Parcelable.Creator<E> creator;
-    private ConnectionToProvider connectionToProvider;
-    private int itemRetrievalRangeInOneDirection;
-
-    private int size = 0;
-    private int priority = 0;
-
-    public RemoteListImpl(String listPath, Parcelable.Creator<E> creator, ConnectionToProvider connectionToProvider, int itemStorageSize, int itemRetrievalRangeInOneDirection)
-    {
-        this.listPath = listPath;
-        this.connectionToProvider = connectionToProvider;
-        this.itemRetrievalRangeInOneDirection = itemRetrievalRangeInOneDirection;
-        this.creator = creator;
-
-        entries = new LruCache<>(itemStorageSize);
+    init {
+        entries = LruCache(itemStorageSize)
     }
 
-    @Override
-    public String getPath()
-    {
-        return listPath;
-    }
+    override fun get(position: Int): E {
+        if (position < 0 || position >= size()) throw ArrayIndexOutOfBoundsException()
+        val entry = entries[position]
+        if (entry == null) {
+            coroutineScope.launch {
 
-    @Override
-    public E get(int position)
-    {
-        if (position < 0 || position >= size())
-            throw new ArrayIndexOutOfBoundsException();
-
-        E entry = entries.get(position);
-        if (entry == null)
-        {
-            //Only send one packet at a time to prevent connection clogging when there are many requests at once (for example when scrolling)
-
-            loadItems(position, false);
+                //Only send one packet at a time to prevent connection clogging when there are many requests at once (for example when scrolling)
+                loadItems(position, false)
+            }
         }
-
-        return entry;
+        return entry
     }
 
-    @Override
-    public int size()
-    {
-        return size;
+    override fun size(): Int {
+        return size
     }
 
-    @Override
-    public int getPriority()
-    {
-        return priority;
+    override fun isLoaded(position: Int): Boolean {
+        if (position < 0 || position >= size()) throw ArrayIndexOutOfBoundsException()
+        return entries[position] != null
     }
 
-    @Override
-    public void setPriority(int priority)
-    {
-        this.priority = priority;
+    override suspend fun loadItems(position: Int, exact: Boolean) {
+        loadItems(position, itemRetrievalRangeInOneDirection, exact)
     }
 
-    @Override
-    public boolean isLoaded(int position)
-    {
-        if (position < 0 || position >= size())
-            throw new ArrayIndexOutOfBoundsException();
-
-        return entries.get(position) != null;
-    }
-
-    @Override
-    public void loadItems(int position, boolean exact)
-    {
-        loadItems(position, itemRetrievalRangeInOneDirection, exact);
-    }
-
-    private void loadItems(int position, int amountIntoEveryDirection, boolean exact)
-    {
-        if (position < 0 || position >= size())
-            throw new ArrayIndexOutOfBoundsException();
-
-        int newPosition = position;
-
-        if (!exact)
-        {
+    private suspend fun loadItems(position: Int, amountIntoEveryDirection: Int, exact: Boolean) {
+        if (position < 0 || position >= size()) throw ArrayIndexOutOfBoundsException()
+        var newPosition = position
+        if (!exact) {
             //There may be items already in this range,
             //so we shift range out of known items to
             //maximize efficiency
-            for (int i = -amountIntoEveryDirection; i <= 0; i++)
-            {
-                int absoluteLocation = i + position;
-
-                if (absoluteLocation >= 0 && entries.get(absoluteLocation) == null)
-                {
-                    int amountToMove = amountIntoEveryDirection + i;
-
-                    newPosition = position + amountToMove;
-                    break;
+            for (i in -amountIntoEveryDirection..0) {
+                val absoluteLocation = i + position
+                if (absoluteLocation >= 0 && entries[absoluteLocation] == null) {
+                    val amountToMove = amountIntoEveryDirection + i
+                    newPosition = position + amountToMove
+                    break
                 }
             }
-
-            if (newPosition == position)
-            {
-                for (int i = amountIntoEveryDirection; i >= 0 ; i--)
-                {
-                    int absoluteLocation = i + position;
-
-                    if (absoluteLocation < size && entries.get(absoluteLocation) == null)
-                    {
-                        int amountToMove = amountIntoEveryDirection - i;
-                        newPosition = position - amountToMove;
-                        break;
+            if (newPosition == position) {
+                for (i in amountIntoEveryDirection downTo 0) {
+                    val absoluteLocation = i + position
+                    if (absoluteLocation < size && entries[absoluteLocation] == null) {
+                        val amountToMove = amountIntoEveryDirection - i
+                        newPosition = position - amountToMove
+                        break
                     }
                 }
             }
         }
-
-        int from = Math.max(0, newPosition - amountIntoEveryDirection);
-        int to = Math.min(size - 1, newPosition + amountIntoEveryDirection);
-
-        connectionToProvider.requestItems(listPath, from, to);
+        val from = max(0.0, (newPosition - amountIntoEveryDirection).toDouble()).toInt()
+        val to = min((size - 1).toDouble(), (newPosition + amountIntoEveryDirection).toDouble())
+            .toInt()
+        connectionToProvider.requestItems(path, from, to)
     }
 
-    @Override
-    public void fillAround(int position, int amountIntoEveryDirection)
-    {
-        int from = Math.max(0, position - amountIntoEveryDirection);
-        int to = Math.min(size - 1, position + amountIntoEveryDirection);
-
-        boolean allLoaded = true;
-        for (int i = from; i <= to; i++)
-        {
-            if (!isLoaded(i))
-            {
-                allLoaded = false;
-                break;
+    override suspend fun fillAround(position: Int, amountIntoEveryDirection: Int) {
+        val from = max(0.0, (position - amountIntoEveryDirection).toDouble()).toInt()
+        val to = min((size - 1).toDouble(), (position + amountIntoEveryDirection).toDouble())
+            .toInt()
+        var allLoaded = true
+        for (i in from..to) {
+            if (!isLoaded(i)) {
+                allLoaded = false
+                break
             }
         }
-
-        if (allLoaded)
-            return;
-
-        loadItems(position, amountIntoEveryDirection, false);
+        if (allLoaded) return
+        loadItems(position, amountIntoEveryDirection, false)
     }
 
-    @Override
-    public void invalidate()
-    {
-        this.size = 0;
-        entries.evictAll();
-        connectionToProvider.requestListSize(listPath);
+    override suspend fun invalidate() {
+        size = 0
+        entries.evictAll()
+        connectionToProvider.requestListSize(path)
     }
 
-    @Override
-    public void updateSizeReceived(String listPath, int newSize)
-    {
-        if (newSize == 0)
-        {
-            entries.evictAll();
-        }
-        else if (this.size() > newSize)
-        {
-            for (Integer key : entries.snapshot().keySet())
-            {
-                if (key < newSize)
-                    entries.remove(key);
+    override fun updateSizeReceived(listPath: String, newSize: Int) {
+        if (newSize == 0) {
+            entries.evictAll()
+        } else if (size() > newSize) {
+            for (key in entries.snapshot().keys) {
+                if (key < newSize) entries.remove(key)
             }
         }
-
-        this.size = newSize;
+        size = newSize
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public void dataReceived(String listPath, int from, Parcelable[] data)
-    {
-        for (int i = 0; i < data.length; i++)
-        {
-            entries.put(i + from, (E) data[i]);
+    override suspend fun dataReceived(listPath: String, from: Int, data: Array<Parcelable?>) {
+        for (i in data.indices) {
+            entries.put(i + from, data[i] as E)
         }
     }
 
-    @Override
-    public Parcelable.Creator getParcelableCreator(String listPath)
-    {
-        return creator;
+    override fun getParcelableCreator(listPath: String): Creator<*> {
+        return creator
     }
 
-    @Override
-    public void onError(String listPath, @TransferError int errorCode)
-    {
-    }
+    override fun onError(listPath: String, @TransferError errorCode: Int) {}
 }
