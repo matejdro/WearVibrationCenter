@@ -1,177 +1,165 @@
-package com.matejdro.wearvibrationcenter;
+package com.matejdro.wearvibrationcenter
 
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.BatteryManager;
-import android.os.PowerManager;
-import android.os.Vibrator;
-import androidx.annotation.Nullable;
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.BatteryManager
+import android.os.PowerManager
+import android.os.Vibrator
+import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.wearable.DataEvent
+import com.google.android.gms.wearable.DataEventBuffer
+import com.google.android.gms.wearable.DataItemAsset
+import com.google.android.gms.wearable.MessageEvent
+import com.google.android.gms.wearable.Wearable
+import com.google.android.gms.wearable.WearableListenerService
+import com.matejdro.wearutils.WatchUtils
+import com.matejdro.wearutils.logging.LogTransmitter
+import com.matejdro.wearutils.messages.ParcelPacker
+import com.matejdro.wearvibrationcenter.common.AlarmCommand
+import com.matejdro.wearvibrationcenter.common.CommPaths
+import com.matejdro.wearvibrationcenter.common.InterruptionCommand
+import com.matejdro.wearvibrationcenter.common.LiteAlarmCommand
+import com.matejdro.wearvibrationcenter.common.VibrationCommand
+import timber.log.Timber
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.io.InputStream
 
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.wearable.DataEvent;
-import com.google.android.gms.wearable.DataEventBuffer;
-import com.google.android.gms.wearable.DataItem;
-import com.google.android.gms.wearable.DataItemAsset;
-import com.google.android.gms.wearable.MessageEvent;
-import com.google.android.gms.wearable.Wearable;
-import com.google.android.gms.wearable.WearableListenerService;
-import com.matejdro.wearutils.WatchUtils;
-import com.matejdro.wearutils.logging.LogTransmitter;
-import com.matejdro.wearutils.messages.ParcelPacker;
-import com.matejdro.wearvibrationcenter.common.AlarmCommand;
-import com.matejdro.wearvibrationcenter.common.CommPaths;
-import com.matejdro.wearvibrationcenter.common.InterruptionCommand;
-import com.matejdro.wearvibrationcenter.common.LiteAlarmCommand;
-import com.matejdro.wearvibrationcenter.common.VibrationCommand;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
-import timber.log.Timber;
-
-public class PhoneCommandListener extends WearableListenerService {
-    @Nullable
-    private static byte[] readFully(InputStream in) {
-        if (in == null) {
-            return null;
-        }
-
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-
-        int bytesRead;
-        byte[] buffer = new byte[1024];
-
-        try {
-            while ((bytesRead = in.read(buffer, 0, buffer.length)) != -1) {
-                outStream.write(buffer, 0, bytesRead);
-            }
-        } catch (IOException ignored) {
-            return null;
-        }
-
-        return outStream.toByteArray();
-    }
-
-    @Override
-    public void onMessageReceived(MessageEvent messageEvent) {
-        if (CommPaths.COMMAND_VIBRATE.equals(messageEvent.getPath())) {
-            VibrationCommand vibrationCommand = ParcelPacker.getParcelable(messageEvent.getData(), VibrationCommand.CREATOR);
-            vibrate(vibrationCommand);
-        } else if (CommPaths.COMMAND_SEND_LOGS.equals(messageEvent.getPath())) {
-            Intent logSendingIntent = new Intent(this, LogTransmitter.class);
-            logSendingIntent.putExtra(LogTransmitter.EXTRA_TARGET_NODE_ID, messageEvent.getSourceNodeId());
-            logSendingIntent.putExtra(LogTransmitter.EXTRA_TARGET_PATH, CommPaths.CHANNEL_LOGS);
-            startService(logSendingIntent);
+class PhoneCommandListener : WearableListenerService() {
+    override fun onMessageReceived(messageEvent: MessageEvent) {
+        if (CommPaths.COMMAND_VIBRATE == messageEvent.path) {
+            val vibrationCommand =
+                ParcelPacker.getParcelable(messageEvent.data, VibrationCommand.CREATOR)
+            vibrate(vibrationCommand)
+        } else if (CommPaths.COMMAND_SEND_LOGS == messageEvent.path) {
+            val logSendingIntent = Intent(this, LogTransmitter::class.java)
+            logSendingIntent.putExtra(
+                LogTransmitter.EXTRA_TARGET_NODE_ID,
+                messageEvent.sourceNodeId
+            )
+            logSendingIntent.putExtra(LogTransmitter.EXTRA_TARGET_PATH, CommPaths.CHANNEL_LOGS)
+            startService(logSendingIntent)
         }
     }
 
-    @Override
-    public void onDataChanged(DataEventBuffer dataEventBuffer) {
-        GoogleApiClient googleApiClient = null;
-
-        for (DataEvent event : dataEventBuffer) {
-            if (event.getType() != DataEvent.TYPE_CHANGED) {
-                continue;
+    override fun onDataChanged(dataEventBuffer: DataEventBuffer) {
+        var googleApiClient: GoogleApiClient? = null
+        for (event in dataEventBuffer) {
+            if (event.type != DataEvent.TYPE_CHANGED) {
+                continue
             }
-
-            DataItem dataItem = event.getDataItem();
-
-            if (CommPaths.COMMAND_ALARM.equals(dataItem.getUri().getPath())) {
-                LiteAlarmCommand liteAlarmCommand = ParcelPacker.getParcelable(dataItem.getData(), LiteAlarmCommand.CREATOR);
-
+            val dataItem = event.dataItem
+            if (CommPaths.COMMAND_ALARM == dataItem.uri.path) {
+                val data = dataItem.data ?: return
+                val liteAlarmCommand = ParcelPacker.getParcelable(
+                    data, LiteAlarmCommand.CREATOR
+                )
                 if (googleApiClient == null) {
-                    googleApiClient = new GoogleApiClient.Builder(this)
-                            .addApi(Wearable.API)
-                            .build();
-
-                    googleApiClient.blockingConnect();
+                    googleApiClient = GoogleApiClient.Builder(this)
+                        .addApi(Wearable.API)
+                        .build()
+                    googleApiClient.blockingConnect()
                 }
-
-                byte[] iconData = getByteArrayAsset(dataItem.getAssets().get(CommPaths.ASSET_ICON), googleApiClient);
-                byte[] backgroundData = getByteArrayAsset(dataItem.getAssets().get(CommPaths.ASSET_BACKGROUND), googleApiClient);
-
-                AlarmCommand alarmCommand = new AlarmCommand(liteAlarmCommand, backgroundData, iconData);
-                alarm(alarmCommand);
-
-                Wearable.DataApi.deleteDataItems(googleApiClient, dataItem.getUri()).await();
+                val iconData =
+                    getByteArrayAsset(dataItem.assets[CommPaths.ASSET_ICON], googleApiClient)
+                val backgroundData =
+                    getByteArrayAsset(dataItem.assets[CommPaths.ASSET_BACKGROUND], googleApiClient)
+                val alarmCommand = AlarmCommand(liteAlarmCommand, backgroundData, iconData)
+                alarm(alarmCommand)
+                Wearable.DataApi.deleteDataItems(googleApiClient, dataItem.uri).await()
             }
         }
-
-        if (googleApiClient != null) {
-            googleApiClient.disconnect();
-        }
+        googleApiClient?.disconnect()
     }
 
-    private void vibrate(VibrationCommand vibrationCommand) {
+    private fun vibrate(vibrationCommand: VibrationCommand) {
         if (!filterCommand(vibrationCommand)) {
-            return;
+            return
         }
-
-        Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        vibrator.vibrate(vibrationCommand.getPattern(), -1);
-
+        val vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator
+        vibrator.vibrate(vibrationCommand.pattern, -1)
         if (vibrationCommand.shouldForceTurnScreenOn()) {
             // Acquire very brief screen wakelock to wake the screen up
-
-            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-            assert pm != null;
-            @SuppressWarnings("deprecation") // There appears to be no non-deprecated way to do this
-                    PowerManager.WakeLock wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK
-                    | PowerManager.ACQUIRE_CAUSES_WAKEUP
-                    | PowerManager.ON_AFTER_RELEASE, "Vibration Center screen wake");
-            wakeLock.acquire(1);
+            val pm = (getSystemService(POWER_SERVICE) as PowerManager)
+            @Suppress("deprecation") val wakeLock// There appears to be no non-deprecated way to do this
+                    = pm.newWakeLock(
+                PowerManager.FULL_WAKE_LOCK
+                        or PowerManager.ACQUIRE_CAUSES_WAKEUP
+                        or PowerManager.ON_AFTER_RELEASE, "Vibration Center screen wake"
+            )
+            wakeLock.acquire(1)
         }
     }
 
-    private void alarm(AlarmCommand alarmCommand) {
+    private fun alarm(alarmCommand: AlarmCommand) {
         if (!filterCommand(alarmCommand)) {
-            return;
+            return
         }
-
-        Intent alarmActivityIntent = new Intent(this, AlarmActivity.class);
-        alarmActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        alarmActivityIntent.putExtra(AlarmActivity.EXTRA_ALARM_COMMAND_BYTES, ParcelPacker.getData(alarmCommand));
-        startActivity(alarmActivityIntent);
+        val alarmActivityIntent = Intent(this, AlarmActivity::class.java)
+        alarmActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        alarmActivityIntent.putExtra(
+            AlarmActivity.EXTRA_ALARM_COMMAND_BYTES,
+            ParcelPacker.getData(alarmCommand)
+        )
+        startActivity(alarmActivityIntent)
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    private boolean filterCommand(InterruptionCommand command) {
+    private fun filterCommand(command: InterruptionCommand): Boolean {
         if (command.shouldNotVibrateOnCharger()) {
-            Intent batteryIntent = registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-            boolean pluggedIn = batteryIntent != null && batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0;
+            val batteryIntent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            val pluggedIn = batteryIntent != null && batteryIntent.getIntExtra(
+                BatteryManager.EXTRA_PLUGGED,
+                0
+            ) != 0
             if (pluggedIn) {
-                Timber.d("Filter - Charger!");
-                return false;
+                Timber.d("Filter - Charger!")
+                return false
             }
         }
-
         if (command.shouldNotVibrateInTheater() &&
-                WatchUtils.isWatchInTheaterMode(this)) {
-            Timber.d("Filter - Theater mode!");
-            return false;
+            WatchUtils.isWatchInTheaterMode(this)
+        ) {
+            Timber.d("Filter - Theater mode!")
+            return false
         }
-
-        return true;
+        return true
     }
 
-    @Nullable
-    private byte[] getByteArrayAsset(@Nullable DataItemAsset asset, GoogleApiClient connectedApiClient) {
+    private fun getByteArrayAsset(
+        asset: DataItemAsset?,
+        connectedApiClient: GoogleApiClient
+    ): ByteArray? {
         if (asset == null) {
-            return null;
+            return null
         }
-
-        InputStream inputStream = Wearable.DataApi.getFdForAsset(connectedApiClient, asset).await().getInputStream();
-        byte[] data = readFully(inputStream);
+        val inputStream =
+            Wearable.DataApi.getFdForAsset(connectedApiClient, asset).await().inputStream
+        val data = readFully(inputStream)
         if (data != null) {
             try {
-                inputStream.close();
-            } catch (IOException ignored) {
+                inputStream.close()
+            } catch (ignored: IOException) {
             }
         }
-
-        return data;
+        return data
     }
 
+    companion object {
+        private fun readFully(`in`: InputStream?): ByteArray? {
+            if (`in` == null) {
+                return null
+            }
+            val outStream = ByteArrayOutputStream()
+            var bytesRead: Int
+            val buffer = ByteArray(1024)
+            try {
+                while (`in`.read(buffer, 0, buffer.size).also { bytesRead = it } != -1) {
+                    outStream.write(buffer, 0, bytesRead)
+                }
+            } catch (ignored: IOException) {
+                return null
+            }
+            return outStream.toByteArray()
+        }
+    }
 }
