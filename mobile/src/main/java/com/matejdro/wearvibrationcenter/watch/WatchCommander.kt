@@ -14,7 +14,6 @@ import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.NodeClient
 import com.google.android.gms.wearable.PutDataRequest
 import com.google.android.gms.wearable.Wearable
-import com.matejdro.wearutils.coroutines.await
 import com.matejdro.wearutils.messages.ParcelPacker
 import com.matejdro.wearutils.messages.getNearestNodeId
 import com.matejdro.wearutils.messages.getOtherNodeId
@@ -26,6 +25,7 @@ import com.matejdro.wearvibrationcenter.common.VibrationCommand
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.tasks.await
 
 class WatchCommander : IntentService("WatchCommander") {
     private lateinit var dataClient: DataClient
