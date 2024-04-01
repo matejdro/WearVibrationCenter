@@ -7,13 +7,15 @@ import android.graphics.Bitmap;
 import android.os.Build;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
-import androidx.core.app.NotificationCompat;
+
 import androidx.collection.ArrayMap;
+import androidx.core.app.NotificationCompat;
 
 import com.matejdro.wearutils.miscutils.BitmapUtils;
 import com.matejdro.wearutils.miscutils.DeviceUtils;
 import com.matejdro.wearutils.miscutils.TextUtils;
 import com.matejdro.wearutils.preferences.definition.Preferences;
+import com.matejdro.wearvibrationcenter.R;
 import com.matejdro.wearvibrationcenter.common.AlarmCommand;
 import com.matejdro.wearvibrationcenter.common.VibrationCommand;
 import com.matejdro.wearvibrationcenter.notificationprovider.NotificationBroadcaster;
@@ -60,14 +62,34 @@ public class NotificationProcessor {
 
         ProcessedNotification lastFilteredNotification = null;
 
+        int numAlarms = 0;
+
         for (ProcessedNotification notification : pendingNotifications) {
             SharedPreferences appPreferences = notification.getAppPreferences();
+            VibrationType vibrationType = Preferences.getEnum(appPreferences, PerAppSettings.VIBRATION_TYPE);
+            if (vibrationType == VibrationType.ALARM) {
+                numAlarms++;
+                continue;
+            }
 
-            Timber.d("Processing %s", notification.getContentNotification().getPackageName());
+            if (vibrationType != VibrationType.ALARM) {
+                String combinedText = notification.getTitle() + " " + notification.getText();
+                List<String> alarmRegexes = Preferences.getStringList(appPreferences, PerAppSettings.ALARM_REGEX);
+                if (alarmRegexes != null && TextUtils.containsRegexes(combinedText, alarmRegexes)) {
+                    numAlarms++;
+                }
+            }
+
+        }
+
+        for (ProcessedNotification notification : pendingNotifications) {
+
+            Timber.d("Processing %s %d", notification.getContentNotification().getPackageName(), numAlarms);
 
             if (!filterNotification(notification)) {
                 continue;
             }
+            SharedPreferences appPreferences = notification.getAppPreferences();
 
             VibrationType vibrationType = Preferences.getEnum(appPreferences, PerAppSettings.VIBRATION_TYPE);
 
@@ -82,7 +104,7 @@ public class NotificationProcessor {
 
             if (vibrationType == VibrationType.ALARM) {
                 notificationBroadcaster.onNewNotification(notification);
-                processAlarm(notification);
+                processAlarm(notification, numAlarms);
                 return;
             }
 
@@ -124,7 +146,7 @@ public class NotificationProcessor {
         WatchCommander.sendVibrationCommand(context, vibrationCommand);
     }
 
-    private void processAlarm(ProcessedNotification notification) {
+    private void processAlarm(ProcessedNotification notification, int numAlarms) {
         Timber.d("Alarm from %s", notification.getContentNotification().getPackageName());
 
         SharedPreferences appPreferences = notification.getAppPreferences();
@@ -139,7 +161,14 @@ public class NotificationProcessor {
 
         int snoozeDuration = Preferences.getInt(appPreferences, PerAppSettings.SNOOZE_DURATION);
 
-        AlarmCommand alarmCommand = new AlarmCommand(notification.getTitle(),
+        String title;
+        if (numAlarms > 1) {
+            title = context.getString(R.string.multi_alarms, numAlarms);
+        } else {
+            title = notification.getTitle();
+        }
+
+        AlarmCommand alarmCommand = new AlarmCommand(title,
                 vibrationPattern,
                 BitmapUtils.serialize(background),
                 BitmapUtils.serialize(icon),

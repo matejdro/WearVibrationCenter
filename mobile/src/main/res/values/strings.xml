@@ -47,4 +47,5 @@
     <string name="temporary_mute_channel_name">Temporary mute notifications</string>
     <string name="tip_timed_mute">Timed mute permission</string>
     <string name="tip_timed_mute_description">For best performance with the timed mute function, you need to grant us reminders permission</string>
+    <string name="multi_alarms">%1$d alarms</string>
 </resources>
