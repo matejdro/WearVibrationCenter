@@ -23,6 +23,7 @@ import com.matejdro.wearvibrationcenter.preferences.PerAppSettings;
 import com.matejdro.wearvibrationcenter.preferences.VibrationType;
 import com.matejdro.wearvibrationcenter.watch.WatchCommander;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -62,29 +63,10 @@ public class NotificationProcessor {
 
         ProcessedNotification lastFilteredNotification = null;
 
-        int numAlarms = 0;
+        List<ProcessedNotification> alarms = new ArrayList<>();
 
         for (ProcessedNotification notification : pendingNotifications) {
-            SharedPreferences appPreferences = notification.getAppPreferences();
-            VibrationType vibrationType = Preferences.getEnum(appPreferences, PerAppSettings.VIBRATION_TYPE);
-            if (vibrationType == VibrationType.ALARM) {
-                numAlarms++;
-                continue;
-            }
-
-            if (vibrationType != VibrationType.ALARM) {
-                String combinedText = notification.getTitle() + " " + notification.getText();
-                List<String> alarmRegexes = Preferences.getStringList(appPreferences, PerAppSettings.ALARM_REGEX);
-                if (alarmRegexes != null && TextUtils.containsRegexes(combinedText, alarmRegexes)) {
-                    numAlarms++;
-                }
-            }
-
-        }
-
-        for (ProcessedNotification notification : pendingNotifications) {
-
-            Timber.d("Processing %s %d", notification.getContentNotification().getPackageName(), numAlarms);
+            Timber.d("Processing %s", notification.getContentNotification().getPackageName());
 
             if (!filterNotification(notification)) {
                 continue;
@@ -103,9 +85,7 @@ public class NotificationProcessor {
             }
 
             if (vibrationType == VibrationType.ALARM) {
-                notificationBroadcaster.onNewNotification(notification);
-                processAlarm(notification, numAlarms);
-                return;
+                alarms.add(notification);
             }
 
             Timber.d("Vibrating from %s", notification.getContentNotification().getPackageName());
@@ -129,6 +109,13 @@ public class NotificationProcessor {
         }
 
         pendingNotifications.clear();
+
+        if (!alarms.isEmpty()) {
+            Timber.d("Alarms %d %s", alarms.size(), alarms);
+            ProcessedNotification firstAlarm = alarms.get(0);
+            notificationBroadcaster.onNewNotification(firstAlarm);
+            processAlarm(firstAlarm, alarms.size());
+        }
 
         Timber.d("Vibrate: %s", Arrays.toString(longestPattern));
         if (longestPattern == null) {

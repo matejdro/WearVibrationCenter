@@ -86,4 +86,17 @@ public class ProcessedNotification {
                     ((contentNotification.getTag() != null && contentNotification.getTag().equals(other.getTag())) || (contentNotification.getTag() == null && other.getTag() == null)));
         }
     }
+
+    @Override
+    public String toString() {
+        return "ProcessedNotification{" +
+                "contentNotification=" + contentNotification +
+                ", metadataNotification=" + metadataNotification +
+                ", appPreferences=" + appPreferences +
+                ", updateNotification=" + updateNotification +
+                ", subsequentNotification=" + subsequentNotification +
+                ", title='" + title + '\'' +
+                ", text='" + text + '\'' +
+                '}';
+    }
 }
