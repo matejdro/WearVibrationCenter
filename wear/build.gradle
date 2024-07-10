@@ -3,12 +3,12 @@ apply plugin: 'kotlin-android'
 
 //noinspection GroovyMissingReturnStatement
 android {
-    compileSdkVersion 34
     namespace = "com.matejdro.wearvibrationcenter"
     defaultConfig {
         applicationId "com.matejdro.wearvibrationcenter"
         minSdkVersion 23
         targetSdkVersion 30
+        compileSdk 34
         versionCode 116
         versionName "1.3.0"
 
