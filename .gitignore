@@ -3,6 +3,7 @@
 *.ipr
 .idea/
 .gradle/
+.kotlin/
 local.properties
 keystore.properties
 out/
