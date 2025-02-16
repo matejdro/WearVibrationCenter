@@ -127,8 +127,12 @@ class PhoneCommandListener : WearableListenerService() {
         if (asset == null) {
             return null
         }
-        val inputStream =
-            Tasks.await(dataClient.getFdForAsset(asset)).inputStream
+        val inputStream = try {
+                Tasks.await(dataClient.getFdForAsset(asset)).inputStream
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return null
+            }
         val data = readFully(inputStream)
         if (data != null) {
             try {
