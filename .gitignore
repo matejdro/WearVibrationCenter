@@ -8,7 +8,7 @@ local.properties
 keystore.properties
 out/
 build/
-gradle*
+gradle/
 
 bin/
 .classpath
