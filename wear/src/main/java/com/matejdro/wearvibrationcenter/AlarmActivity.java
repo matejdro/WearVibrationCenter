@@ -224,7 +224,7 @@ public class AlarmActivity extends WearableActivity implements View.OnTouchListe
             // Screen has turned off or some other app gained focus. Alarm must continue, let's try to restart ourselves.
 
             Intent restartIntent = new Intent(this, AlarmActivity.class);
-            restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             restartIntent.putExtra(AlarmActivity.EXTRA_ALARM_COMMAND_BYTES, ParcelPacker.getData(alarmCommand));
 
             finish();
