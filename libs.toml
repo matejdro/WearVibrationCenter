@@ -1,26 +1,26 @@
 [versions]
-android-gradle = "8.8.0"
+android-gradle = "8.12.1"
 androidx-annotation = "1.9.1"
-androidx-appCompat = "1.7.0"
+androidx-appCompat = "1.7.1"
 androidx-cardView = "1.0.0"
 androidx-legacySupport = "1.0.0"
+androidx-lifecycle = "2.9.2"
 androidx-percentLayout = "1.0.0"
-androidx-recyclerView = "1.4.0"
 androidx-preference = "1.2.1"
-androidx-lifecycle = "2.8.7"
-crashlytics = "2.10.1@aar"
-desugarJdkLibs = "2.1.4"
-dagger-hilt = "2.52"
+androidx-recyclerView = "1.4.0"
+crashlytics = "2.10.1"
+dagger-hilt = "2.57.1"
+desugarJdkLibs = "2.1.5"
 fabricGradle = "1.31.2"
-kotlin = "2.0.0"
-kotlin-coroutines = "1.10.1"
-kotlinova = "3.3.0"
 google-material = "1.12.0"
-google-wearableLibrary = "2.9.0"
 google-playServices-wearable = "19.0.0"
+google-wearableLibrary = "2.9.0"
+kotlin = "2.2.10"
+kotlin-coroutines = "1.10.2"
+kotlinova = "3.5.0"
 licensesDialog = "2.2.0"
-versionsGradle = "0.51.0"
 versionCatalogUpdate = "1.0.0"
+versionsGradle = "0.51.0"
 
 [libraries]
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
@@ -28,24 +28,24 @@ androidx-annotation = { module = "androidx.annotation:annotation", version.ref =
 androidx-appCompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appCompat" }
 androidx-cardView = { module = "androidx.cardview:cardview", version.ref = "androidx-cardView" }
 androidx-legacySupport = { module = "androidx.legacy:legacy-support-v4", version.ref = "androidx-legacySupport" }
+androidx-lifecycle-viewModel = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "androidx-lifecycle" }
 androidx-percentLayout = { module = "androidx.percentlayout:percentlayout", version.ref = "androidx-percentLayout" }
 androidx-preference = { module = "androidx.preference:preference", version.ref = "androidx-preference" }
 androidx-recyclerView = { module = "androidx.recyclerview:recyclerview", version.ref = "androidx-recyclerView" }
-androidx-lifecycle-viewModel = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "androidx-lifecycle" }
+crashlytics = { module = "com.crashlytics.sdk.android:crashlytics", version.ref = "crashlytics" }
+dagger-hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "dagger-hilt" }
 dagger-hilt-gradlePlugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "dagger-hilt" }
 dagger-hilt-runtime = { module = "com.google.dagger:hilt-android", version.ref = "dagger-hilt" }
-dagger-hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "dagger-hilt" }
 desugarJdkLibs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugarJdkLibs" }
+fabricGradle = { module = "io.fabric.tools:gradle", version.ref = "fabricGradle" }
 google-material = { module = "com.google.android.material:material", version.ref = "google-material" }
-google-wearableSupport = { module = "com.google.android.support:wearable", version.ref = "google.wearableLibrary" }
-google-wearableLibrary = { module = "com.google.android.wearable:wearable", version.ref = "google-wearableLibrary" }
 google-playServices-wearable = { module = "com.google.android.gms:play-services-wearable", version.ref = "google-playServices-wearable" }
+google-wearableLibrary = { module = "com.google.android.wearable:wearable", version.ref = "google-wearableLibrary" }
+google-wearableSupport = { module = "com.google.android.support:wearable", version.ref = "google-wearableLibrary" }
+kotlin-coroutines-playServices = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlin-coroutines" }
+kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlinova-core = { module = "si.inova.kotlinova:core", version.ref = "kotlinova" }
 kotlinova-gradle = { module = "si.inova.kotlinova:gradle", version.ref = "kotlinova" }
-crashlytics = { module = "com.crashlytics.sdk.android:crashlytics", version.ref = "crashlytics" }
-fabricGradle = { module = "io.fabric.tools:gradle", version.ref = "fabricGradle" }
-kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-kotlin-coroutines-playServices = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlin-coroutines" }
 licensesDialog = { module = "de.psdev.licensesdialog:licensesdialog", version.ref = "licensesDialog" }
 versionsGradle = { module = "com.github.ben-manes:gradle-versions-plugin", version.ref = "versionsGradle" }
 
