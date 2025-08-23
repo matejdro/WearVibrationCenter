@@ -1,3 +1,5 @@
+import nl.littlerobots.vcu.plugin.resolver.ModuleVersionCandidate
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
@@ -17,6 +19,31 @@ buildscript {
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
+    }
+}
+
+plugins {
+    alias(libs.plugins.versionCatalogUpdate)
+}
+
+boolean newlyContains(ModuleVersionCandidate self, String keyword) {
+    return !self.currentVersion.contains(keyword) && self.candidate.version.contains(keyword)
+}
+
+versionCatalogUpdate {
+    catalogFile.set(file("libs.toml"))
+
+    // Custom version selection logic to exclude pre-release versions
+    versionSelector {
+        !newlyContains(it, "alpha") &&
+        !newlyContains(it, "beta") &&
+        !newlyContains(it, "Beta") &&
+        !newlyContains(it, "RC") &&
+        !newlyContains(it, "rc") &&
+        !newlyContains(it, "M") &&
+        !newlyContains(it, "eap") &&
+        !newlyContains(it, "dev") &&
+        !newlyContains(it, "pre")
     }
 }
 

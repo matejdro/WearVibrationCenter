@@ -20,6 +20,7 @@ google-wearableLibrary = "2.9.0"
 google-playServices-wearable = "19.0.0"
 licensesDialog = "2.2.0"
 versionsGradle = "0.51.0"
+versionCatalogUpdate = "1.0.0"
 
 [libraries]
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
@@ -47,3 +48,6 @@ kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.
 kotlin-coroutines-playServices = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlin-coroutines" }
 licensesDialog = { module = "de.psdev.licensesdialog:licensesdialog", version.ref = "licensesDialog" }
 versionsGradle = { module = "com.github.ben-manes:gradle-versions-plugin", version.ref = "versionsGradle" }
+
+[plugins]
+versionCatalogUpdate = { id = "nl.littlerobots.version-catalog-update", version.ref = "versionCatalogUpdate" }
